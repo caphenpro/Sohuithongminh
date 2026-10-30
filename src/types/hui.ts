@@ -73,7 +73,7 @@ export interface HuiGroup {
 
 export interface AppSettings {
   pinEnabled: boolean;
-  pinCode: string; // 4 số
+  pinCode: string; // PBKDF2 hash; never store the raw PIN
   autoLockMinutes: number; // Khóa sau số phút không dùng
   ownerName: string; // Tên chủ hụi
   ownerPhone: string;
