@@ -1,29 +1,44 @@
 # F-Droid packaging status
 
 Package ID: `vn.caphenpro.sohuithongminh`  
-Current upstream version: `2.0.0` (versionCode `20000`)  
+Upstream version: `2.0.0` (versionCode `20000`)  
 License: `GPL-3.0-or-later`  
 Source: https://github.com/caphenpro/Sohuithongminh
 
-## Current status: preparation only
+## Current status: preparation, not published
 
-This project has **not** been accepted or published by F-Droid. Successful GitHub Actions builds are upstream CI results; they do not prove that F-Droid can reproduce the APK in its own build environment.
+The project has not been submitted to or accepted by F-Droid. A successful upstream GitHub Actions build is not proof that F-Droid can reproduce the APK in its isolated build environment.
 
-## Checks completed
+## Completed upstream preparation
 
-- A committed `package-lock.json` is now used by CI with `npm ci`.
-- GitHub Actions passed the application test suite, TypeScript check, Vite production build, Capacitor Android project generation, and both Android APK build variants.
-- The production dependency license audit completed successfully against the committed lockfile: 167 entries were reported, with no unknown license expressions. The report contains one `UNLICENSED` entry for the private root package `so-hui-thong-minh@2.0.0`; this is the application itself, not an unidentified third-party dependency. Third-party entries reported MIT, BSD-3-Clause, Apache-2.0, MPL-2.0, ISC, BSD-2-Clause, and 0BSD. This automated report is not a substitute for manual review of dependency and asset licenses.
+- Native Android Gradle project and Gradle wrapper are committed under `android/`.
+- The app manifest does not request Android's `INTERNET` permission.
+- The Google Services Gradle plugin has been removed.
+- CI checks that the manifest and Gradle files do not reintroduce those network-related declarations.
+- CI installs JavaScript dependencies from the committed npm lockfile, runs app tests and production build, syncs Capacitor, and builds Debug and unsigned Release APKs.
+- Fastlane text metadata exists for Vietnamese and English.
+- Android launcher mipmap resources are present.
+- License is GPL-3.0-or-later.
 
-## Remaining blockers before submission
+## Current CI verification
 
-- **Stable Android source project:** the current workflow runs `npx cap add android` during CI. The generated Android Gradle project and wrapper are not committed. F-Droid needs a reproducible source-build recipe that can create the app without depending on network access during the build. This is the primary packaging blocker.
-- **Offline dependency availability:** npm packages and Gradle dependencies must be available to the F-Droid build process through an accepted reproducible mechanism; a lockfile alone does not make an offline build possible.
-- **App assets and metadata:** add a raster launcher icon and genuine screenshots under the Fastlane metadata directories; verify all artwork licenses.
-- **Runtime review:** verify every runtime network request, optional AI/API integration, and core workflow in airplane mode. Do not require developer-only API keys or proprietary services for core use.
-- **Release validation:** create a source tag/release, then run `fdroid lint` and `fdroid build` against the exact source revision in a supported fdroidserver environment.
-- **Submission:** prepare the app metadata/build recipe for the separate `fdroiddata` repository and submit a merge request for F-Droid review.
+Latest successful Android build:
+https://github.com/caphenpro/Sohuithongminh/actions/runs/41024741373
 
-## APK notes
+Latest successful application test and web build:
+https://github.com/caphenpro/Sohuithongminh/actions/runs/41024741327
 
-The CI workflow publishes an installable debug APK for testing and an unsigned release APK as a build artifact. The unsigned APK is not directly installable as-is and is not a substitute for F-Droid's own source build and signing process.
+The latest CI run generated an installable Debug APK for device testing, an unsigned Release APK, and an Android source project archive. The unsigned Release APK is not directly installable and is not a substitute for F-Droid's own source build and signing process.
+
+## Remaining work before an F-Droid submission
+
+1. **Reproducible offline build:** F-Droid builds must not download arbitrary dependencies during the build. The Gradle wrapper points to a remote Gradle distribution, and Gradle/Maven dependencies still need to be supplied through an F-Droid-accepted mechanism. The successful GitHub Actions build uses network access and does not prove offline reproducibility.
+2. **F-Droid build recipe:** create and validate metadata YAML in the separate `fdroiddata` repository, including version, commit, build commands, Gradle configuration and required prebuild steps.
+3. **Store assets:** add genuine screenshots and verify launcher artwork and asset licenses. Native launcher mipmap resources exist, but Fastlane screenshot/icon metadata has not been verified as complete.
+4. **Runtime validation:** test core workflows on a physical Android device in airplane mode, including create/edit hui, collection/payment records, PIN lock, JSON export and restore.
+5. **Static and build validation:** run `fdroid lint` and `fdroid build` against the exact tagged source revision in a supported fdroidserver environment.
+6. **Submission:** open a merge request to F-Droid's separate `fdroiddata` repository and address reviewer feedback.
+
+## Offline and privacy notes
+
+The absence of Android's `INTERNET` permission is a strong platform-level restriction for this build. It does not replace a source audit or physical-device testing. PIN hashing is not full-database encryption; users should protect exported JSON backups.
