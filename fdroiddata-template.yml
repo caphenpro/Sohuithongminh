@@ -1,5 +1,4 @@
-# DRAFT ONLY — copy into the separate fdroiddata repository after validation
-# This file does not publish the app.
+# DRAFT ONLY: validate this recipe with fdroidserver and remove this comment before submitting to fdroiddata.
 Categories:
   - Office
 License: GPL-3.0-or-later
@@ -17,13 +16,24 @@ Description: |
   Ứng dụng không yêu cầu quyền INTERNET trong Android Manifest.
 RepoType: git
 Repo: https://github.com/caphenpro/Sohuithongminh.git
+UpdateCheckMode: None
 CurrentVersion: 2.0.0
 CurrentVersionCode: 20000
 Builds:
   - versionName: 2.0.0
     versionCode: 20000
-    commit: e093425beb404b422b84f3a84d5bc1f531ee5d9a
+    commit: 5f582b83b1f13772b0b3ce78ad91dd7051a266e0
     subdir: android
+    sudo:
+      - apt-get update
+      - apt-get install -y nodejs npm
+    init:
+      - cd ..
+      - npm ci --no-audit --no-fund
+    prebuild:
+      - cd ..
+      - npm run build
+      - npx cap sync android
     gradle:
       - yes
-    # Starting point only. Validate exact Gradle recipe and build output with fdroidserver.
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
