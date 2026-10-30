@@ -1,6 +1,6 @@
 {
   "name": "Sổ Hụi Offline - Quản Lý & Gom Hụi",
-  "description": "Ứng dụng sổ hụi ngoại tuyến thông minh, bảo mật tại chỗ bằng mã PIN, tự động tính tiền hụi sống - hụi chết, theo dõi đóng gom theo kỳ và xuất bảng kê chia sẻ Zalo.",
+  "description": "Ứng dụng quản lý sổ hụi ngoại tuyến. Dữ liệu được lưu trên thiết bị, hỗ trợ PIN, theo dõi các kỳ thu chi và sao lưu/khôi phục bằng tệp JSON.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
