@@ -1,0 +1,4 @@
+Version 2.0.0
+- Allow users to enter a custom total number of shares per round.
+- Manage hui groups, shares, rounds, collections and payouts.
+- Store data locally and export/restore JSON backups.
