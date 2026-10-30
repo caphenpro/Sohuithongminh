@@ -13,6 +13,8 @@ on:
       - 'vite.config.ts'
       - 'index.html'
       - 'capacitor.config.json'
+      - 'android/**'
+      - 'metadata.json'
       - '.github/workflows/build-fdroid-apk.yml'
 
 permissions:
@@ -92,6 +94,18 @@ jobs:
             git commit -m 'chore(android): commit generated native project [skip ci]'
             git push
           fi
+
+      - name: Verify offline Android permissions and build configuration
+        run: |
+          if grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml; then
+            echo 'Unexpected INTERNET permission in offline app manifest'
+            exit 1
+          fi
+          if grep -R -n 'com.google.gms:google-services' android --include='*.gradle'; then
+            echo 'Unexpected Google Services build plugin'
+            exit 1
+          fi
+          echo 'Offline manifest and Android build configuration verified'
 
       - name: Build unsigned release APK for F-Droid source-build verification
         working-directory: android
