@@ -1,0 +1,58 @@
+name: F-Droid dependency license audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'bun.lock'
+      - '.github/workflows/fdroid-license-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate production dependency license report
+        run: |
+          npx --yes license-checker --production --json --out dependency-licenses.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync('dependency-licenses.json', 'utf8'));
+          const rows = Object.entries(report).map(([name, meta]) => ({
+            name,
+            licenses: meta.licenses ?? 'UNKNOWN',
+            repository: meta.repository ?? '',
+            licenseFile: meta.licenseFile ?? ''
+          }));
+          console.log('Production dependency packages:', rows.length);
+          for (const row of rows) console.log(`${row.name} | ${row.licenses} | ${row.repository}`);
+          const unknown = rows.filter(row => !row.licenses || /unknown|see license/i.test(String(row.licenses)));
+          if (unknown.length) {
+            console.error('Dependencies requiring manual license review:', unknown.map(row => row.name).join(', '));
+            process.exitCode = 1;
+          }
+          NODE
+
+      - name: Upload dependency license report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdroid-dependency-license-report
+          path: dependency-licenses.json
+          if-no-files-found: warn
+          retention-days: 30
