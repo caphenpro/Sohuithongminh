@@ -19,7 +19,7 @@ This project has **not** been accepted or published by F-Droid. The GitHub Actio
 - Remove unused dependencies and regenerate/commit a consistent lockfile. The repository currently has `bun.lock`, while the APK workflow uses `npm install`; dependency resolution is therefore not yet pinned consistently for the F-Droid build.
 - Commit a stable Android Gradle project and wrapper, or document a supported source-generation step that can run reproducibly in F-Droid's build environment. At present, the CI workflow generates the Capacitor Android project during the build.
 - Verify the project builds without developer-only API keys or non-free services. F-Droid does not provide API keys.
-- Review remotely loaded assets such as Google Fonts and ensure the app remains fully functional offline.
+- Google Fonts links have been removed from `index.html`; still review all runtime network requests and verify that core features remain functional in airplane mode.
 - Add a raster launcher icon and genuine screenshots to the metadata.
 - Create and publish a source release/tag, then test the exact source revision using `fdroid lint` and `fdroid build` in a supported fdroidserver environment.
 - Prepare the metadata file for the separate `fdroiddata` repository and submit a merge request for review.
