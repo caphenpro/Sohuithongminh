@@ -9,13 +9,14 @@ on:
       - 'public/**'
       - 'package.json'
       - 'bun.lock'
+      - 'package-lock.json'
       - 'vite.config.ts'
       - 'index.html'
       - 'capacitor.config.json'
       - '.github/workflows/build-fdroid-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -41,7 +42,23 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        id: deps
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+            echo "generated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit generated npm lockfile
+        if: steps.deps.outputs.generated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "build: pin npm dependency graph"
+          git push
 
       - name: Upload generated npm lockfile for review
         uses: actions/upload-artifact@v4
