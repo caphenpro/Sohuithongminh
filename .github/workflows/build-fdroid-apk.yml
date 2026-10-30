@@ -72,7 +72,19 @@ jobs:
       - name: Commit generated Android project to repository
         run: |
           # Keep generated native sources and bundled web assets in version control.
-          sed -i '/^capacitor-cordova-android-plugins$/d; /^app\\/src\\/main\\/assets\\/public$/d; /^app\\/src\\/main\\/assets\\/capacitor\\.config\\.json$/d; /^app\\/src\\/main\\/assets\\/capacitor\\.plugins\\.json$/d; /^app\\/src\\/main\\/res\\/xml\\/config\\.xml$/d' android/.gitignore
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/.gitignore")
+          excluded = {
+              "capacitor-cordova-android-plugins",
+              "app/src/main/assets/public",
+              "app/src/main/assets/capacitor.config.json",
+              "app/src/main/assets/capacitor.plugins.json",
+              "app/src/main/res/xml/config.xml",
+          }
+          lines = path.read_text().splitlines()
+          path.write_text("\\n".join(line for line in lines if line.strip() not in excluded) + "\\n")
+          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add android
