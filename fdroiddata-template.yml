@@ -1,0 +1,29 @@
+# DRAFT ONLY — copy into the separate fdroiddata repository after validation
+# This file does not publish the app.
+Categories:
+  - Office
+License: GPL-3.0-or-later
+AuthorName: caphenpro
+WebSite: https://github.com/caphenpro/Sohuithongminh
+SourceCode: https://github.com/caphenpro/Sohuithongminh
+IssueTracker: https://github.com/caphenpro/Sohuithongminh/issues
+Name: Sổ Hụi Thông Minh
+Summary: Quản lý dây hụi, chân hụi, kỳ khui và thu chi ngoại tuyến
+Description: |
+  Ứng dụng quản lý dây hụi, chân hụi, kỳ khui, thu tiền và bàn giao tiền.
+  Dữ liệu được lưu cục bộ trên thiết bị.
+  Hỗ trợ sao lưu và khôi phục dữ liệu bằng tệp JSON.
+  Bảo vệ truy cập bằng mã PIN.
+  Ứng dụng không yêu cầu quyền INTERNET trong Android Manifest.
+RepoType: git
+Repo: https://github.com/caphenpro/Sohuithongminh.git
+CurrentVersion: 2.0.0
+CurrentVersionCode: 20000
+Builds:
+  - versionName: 2.0.0
+    versionCode: 20000
+    commit: e093425beb404b422b84f3a84d5bc1f531ee5d9a
+    subdir: android
+    gradle:
+      - yes
+    # Starting point only. Validate exact Gradle recipe and build output with fdroidserver.
