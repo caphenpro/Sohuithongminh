@@ -70,3 +70,5 @@ jobs:
           path: dependency-licenses.json
           if-no-files-found: warn
           retention-days: 30
+
+# Audit is intentionally triggered whenever its policy or dependency lockfile changes.
