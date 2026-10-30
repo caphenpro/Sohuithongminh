@@ -29,10 +29,11 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
     return group.shares.filter((s) => !s.isDead);
   }, [group]);
 
+  const ownerFirstRound = nextRoundNumber === 1 && group.firstPotRule === 'owner_first';
   const [selectedShareId, setSelectedShareId] = useState<string>(
     availableLiveShares[0]?.id || ''
   );
-  const [bidAmountStr, setBidAmountStr] = useState<string>('150000');
+  const [bidAmountStr, setBidAmountStr] = useState<string>(ownerFirstRound ? '0' : '150000');
   const [commissionStr, setCommissionStr] = useState<string>(
     String(group.commissionDefault || 0)
   );
@@ -42,6 +43,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
 
   const bidAmount = parseInt(bidAmountStr.replace(/[^\d]/g, ''), 10) || 0;
   const commission = parseInt(commissionStr.replace(/[^\d]/g, ''), 10) || 0;
+  const effectiveBidAmount = ownerFirstRound ? 0 : bidAmount;
 
   // Tính toán trước kết quả tức thì
   const preview = useMemo(() => {
@@ -50,10 +52,10 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
       group,
       nextRoundNumber,
       selectedShareId,
-      bidAmount,
+      effectiveBidAmount,
       commission
     );
-  }, [group, nextRoundNumber, selectedShareId, bidAmount, commission]);
+  }, [group, nextRoundNumber, selectedShareId, effectiveBidAmount, commission]);
 
   if (!isOpen) return null;
 
@@ -64,7 +66,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
       return;
     }
 
-    if (bidAmount >= group.baseAmount) {
+    if (!ownerFirstRound && bidAmount >= group.baseAmount) {
       setErrorMsg('Số tiền thăm phải nhỏ hơn số tiền 1 phần hụi!');
       return;
     }
@@ -72,7 +74,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
     if (!preview) return;
 
     // Tạo danh sách payments chi tiết
-    const payments = generateRoundPayments(group, selectedShareId, bidAmount);
+    const payments = generateRoundPayments(group, selectedShareId, effectiveBidAmount);
 
     const winnerShare = group.shares.find((s) => s.id === selectedShareId);
 
@@ -81,7 +83,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
       roundNumber: nextRoundNumber,
       date: roundDate,
       status: 'collecting', // Bắt đầu gom tiền ngay!
-      bidAmount,
+      bidAmount: effectiveBidAmount,
       winnerMemberId: winnerShare?.memberId,
       winnerMemberName: winnerShare?.memberName,
       winnerShareId: selectedShareId,
@@ -157,7 +159,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Giá Kêu Trúng (Tiền Thăm):
+                {ownerFirstRound ? 'Kỳ đầu chủ hụi nhận trước – không đấu thăm:' : 'Giá Kêu Trúng (Tiền Thăm):'}
               </label>
               <span className="text-sm font-bold text-amber-600">
                 {formatVND(bidAmount)}
@@ -170,6 +172,7 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
                 <button
                   type="button"
                   key={val}
+                  disabled={ownerFirstRound}
                   onClick={() => setBidAmountStr(String(val))}
                   className={`py-1.5 px-1 text-xs font-bold rounded-lg border transition ${
                     bidAmount === val
@@ -186,7 +189,8 @@ export const BidRoundModal: React.FC<BidRoundModalProps> = ({
               type="text"
               inputMode="numeric"
               placeholder="Nhập số tiền thăm..."
-              value={bidAmountStr}
+              value={ownerFirstRound ? '0' : bidAmountStr}
+              disabled={ownerFirstRound}
               onChange={(e) => {
                 const clean = e.target.value.replace(/[^\d]/g, '');
                 setBidAmountStr(clean);
