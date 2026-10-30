@@ -79,8 +79,7 @@ jobs:
 
       - name: Package generated Android source project
         run: |
-          zip -r android-source-project.zip android \\
-            -x 'android/.gradle/*' 'android/**/build/*' 'android/local.properties'
+          zip -r android-source-project.zip android -x '*/build/*' '*/.gradle/*' 'android/local.properties'
           test -s android-source-project.zip
 
       - name: Upload generated Android source project
