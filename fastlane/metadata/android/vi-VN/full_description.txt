@@ -1,0 +1,12 @@
+Sổ Hụi Thông Minh giúp theo dõi dây hụi và các kỳ khui trên điện thoại.
+
+Tính năng chính:
+• Tạo và quản lý nhiều dây hụi.
+• Tùy chỉnh tổng số phần/kỳ theo nhu cầu.
+• Theo dõi chân hụi, kỳ khui và tình trạng thu tiền.
+• Ghi nhận việc thu, chi và bàn giao tiền.
+• Lưu dữ liệu cục bộ trên thiết bị, hỗ trợ sử dụng ngoại tuyến.
+• Sao lưu và khôi phục dữ liệu bằng tệp JSON có phiên bản schema và checksum.
+• Bảo vệ truy cập bằng mã PIN được băm PBKDF2-SHA-256.
+
+Lưu ý: Mã PIN không đồng nghĩa với mã hóa toàn bộ dữ liệu. Người dùng nên sao lưu định kỳ và giữ tệp sao lưu ở nơi an toàn. Kết quả thu hụi cần được đối chiếu với thỏa thuận thực tế của từng dây.
