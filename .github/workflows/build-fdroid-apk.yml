@@ -15,6 +15,7 @@ on:
       - 'capacitor.config.json'
       - 'android/**'
       - 'metadata.json'
+      - 'fdroiddata-template.yml'
       - '.github/workflows/build-fdroid-apk.yml'
 
 permissions:
