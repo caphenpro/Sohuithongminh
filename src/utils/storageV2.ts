@@ -151,13 +151,14 @@ export async function importBackupData(json: string): Promise<{ success: boolean
       const expected = await digest(JSON.stringify(parsed.data));
       if (expected !== parsed.sha256) return { success: false, message: 'Kiểm tra SHA-256 thất bại. File có thể đã bị thay đổi hoặc hỏng.' };
     }
+    const existingSettings = parsed?.data?.settings ? await loadAppSettings() : undefined;
+    const importedSettings = existingSettings && parsed?.data?.settings
+      ? { ...DEFAULT_SETTINGS, ...existingSettings, ...parsed.data.settings, pinCode: existingSettings.pinCode }
+      : undefined;
     const db = await openDatabase();
     const tx = db.transaction('records', 'readwrite');
     tx.objectStore('records').put({ key: GROUPS_KEY, value: groups });
-    if (parsed?.data?.settings) {
-      const current = { ...DEFAULT_SETTINGS, ...(await loadAppSettings()), ...parsed.data.settings, pinCode: (await loadAppSettings()).pinCode };
-      tx.objectStore('records').put({ key: SETTINGS_KEY, value: current });
-    }
+    if (importedSettings) tx.objectStore('records').put({ key: SETTINGS_KEY, value: importedSettings });
     await new Promise<void>((resolve, reject) => {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error ?? new Error('Không thể phục hồi dữ liệu.'));
