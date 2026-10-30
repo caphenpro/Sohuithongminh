@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ownerName: 'Chủ Hụi', ownerPhone: '', fontSize: 'normal',
 };
 
-type AuditEntry = { action: string; at: string; details?: Record<string, unknown> };
+export type AuditEntry = { id?: number; action: string; at: string; details?: Record<string, unknown> };
 
 let databasePromise: Promise<IDBDatabase> | undefined;
 function openDatabase(): Promise<IDBDatabase> {
@@ -100,6 +100,38 @@ export async function loadHuiGroups(): Promise<HuiGroup[]> {
 }
 export async function saveHuiGroups(groups: HuiGroup[]): Promise<void> {
   if (!Array.isArray(groups)) throw new Error('Danh sách dây hụi không hợp lệ.');
+  const previous = (await readRecord<HuiGroup[]>(GROUPS_KEY)) ?? [];
+  for (const group of groups) {
+    const oldGroup = previous.find((item) => item.id === group.id);
+    if (!oldGroup) {
+      await audit('group.created', { groupId: group.id, groupName: group.name });
+      continue;
+    }
+    for (const round of group.rounds) {
+      const oldRound = oldGroup.rounds.find((item) => item.id === round.id);
+      if (!oldRound) {
+        await audit('round.opened', { groupId: group.id, roundId: round.id, roundNumber: round.roundNumber });
+        continue;
+      }
+      for (const payment of round.payments) {
+        const oldPayment = oldRound.payments.find((item) => item.shareId === payment.shareId);
+        if (oldPayment && oldPayment.isPaid !== payment.isPaid) {
+          await audit(payment.isPaid ? 'payment.collected' : 'payment.reversed', {
+            groupId: group.id, groupName: group.name, roundId: round.id,
+            roundNumber: round.roundNumber, shareId: payment.shareId,
+            memberName: payment.memberName, amount: payment.amountDue,
+          });
+        }
+      }
+      if (oldRound.isPayoutCompleted !== round.isPayoutCompleted) {
+        await audit(round.isPayoutCompleted ? 'payout.completed' : 'payout.reversed', {
+          groupId: group.id, groupName: group.name, roundId: round.id,
+          roundNumber: round.roundNumber, winner: round.winnerMemberName,
+          amount: round.netWinnerPayout,
+        });
+      }
+    }
+  }
   await writeRecord(GROUPS_KEY, groups);
   await audit('groups.saved', { count: groups.length });
 }
@@ -118,7 +150,8 @@ export async function saveAppSettings(settings: AppSettings): Promise<AppSetting
 export async function getAuditLog(): Promise<AuditEntry[]> {
   const db = await openDatabase();
   const tx = db.transaction('audit', 'readonly');
-  return requestValue(tx.objectStore('audit').getAll()) as Promise<AuditEntry[]>;
+  const entries = await requestValue(tx.objectStore('audit').getAll()) as AuditEntry[];
+  return entries.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100);
 }
 export type BackupPayload = { schemaVersion: 2; createdAt: string; data: { groups: HuiGroup[]; settings: AppSettings }; sha256: string };
 async function digest(value: string): Promise<string> {
