@@ -68,7 +68,7 @@ export function calculateRoundPreview(
 
   return {
     baseAmount,
-    bidAmount,
+    bidAmount: effectiveBidAmount,
     liveAmountDue,
     deadAmountDue,
     totalLiveSharesCount,
@@ -93,7 +93,8 @@ export function generateRoundPayments(
   bidAmount: number
 ): PaymentItem[] {
   const baseAmount = group.baseAmount;
-  const liveAmountDue = Math.max(0, baseAmount - bidAmount);
+  const effectiveBidAmount = group.rounds.length === 0 && group.firstPotRule === 'owner_first' ? 0 : bidAmount;
+  const liveAmountDue = Math.max(0, baseAmount - effectiveBidAmount);
   const deadAmountDue = baseAmount;
 
   return group.shares.map((share) => {
