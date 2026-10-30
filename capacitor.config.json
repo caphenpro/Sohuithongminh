@@ -1,0 +1,11 @@
+{
+  "appId": "vn.caphenpro.sohuithongminh",
+  "appName": "So Hụi Thông Minh",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

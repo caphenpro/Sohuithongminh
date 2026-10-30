@@ -33,7 +33,8 @@ export function calculateRoundPreview(
   customCommission?: number
 ): CalculationPreview {
   const baseAmount = group.baseAmount;
-  const liveAmountDue = Math.max(0, baseAmount - bidAmount);
+  const effectiveBidAmount = roundNumber === 1 && group.firstPotRule === 'owner_first' ? 0 : bidAmount;
+  const liveAmountDue = Math.max(0, baseAmount - effectiveBidAmount);
   const deadAmountDue = baseAmount;
 
   const winnerShare = group.shares.find((s) => s.id === winnerShareId);
@@ -61,13 +62,13 @@ export function calculateRoundPreview(
 
   const commissionAmount =
     customCommission !== undefined ? customCommission : group.commissionDefault || 0;
-  const firstRoundDeduction = 0; // Tiền đầu nếu có thỏa thuận riêng
+  const firstRoundDeduction = 0; // Chưa cấu hình khoản khấu trừ riêng trong thỏa thuận dây hụi
 
   const netWinnerPayout = Math.max(0, grossTotal - commissionAmount - firstRoundDeduction);
 
   return {
     baseAmount,
-    bidAmount,
+    bidAmount: effectiveBidAmount,
     liveAmountDue,
     deadAmountDue,
     totalLiveSharesCount,
@@ -92,7 +93,8 @@ export function generateRoundPayments(
   bidAmount: number
 ): PaymentItem[] {
   const baseAmount = group.baseAmount;
-  const liveAmountDue = Math.max(0, baseAmount - bidAmount);
+  const effectiveBidAmount = group.rounds.length === 0 && group.firstPotRule === 'owner_first' ? 0 : bidAmount;
+  const liveAmountDue = Math.max(0, baseAmount - effectiveBidAmount);
   const deadAmountDue = baseAmount;
 
   return group.shares.map((share) => {
@@ -117,7 +119,7 @@ export function generateRoundPayments(
       memberName: share.memberName,
       phone: share.phone,
       shareIndex: share.shareIndex,
-      isLive: !share.isDead,
+      isLive: !share.isDead && !isWinnerThisRound,
       isWinnerThisRound,
       amountDue,
       isPaid: isWinnerThisRound ? true : false, // Phần trúng tự động đánh dấu đã xong
