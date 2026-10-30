@@ -14,30 +14,42 @@ The project has not been submitted to or accepted by F-Droid. A successful upstr
 - Native Android Gradle project and Gradle wrapper are committed under `android/`.
 - The app manifest does not request Android's `INTERNET` permission.
 - The Google Services Gradle plugin has been removed.
-- CI checks that the manifest and Gradle files do not reintroduce those network-related declarations.
-- CI installs JavaScript dependencies from the committed npm lockfile, runs app tests and production build, syncs Capacitor, and builds Debug and unsigned Release APKs.
-- Fastlane text metadata exists for Vietnamese and English.
-- Android launcher mipmap resources are present.
+- CI checks that the manifest and Gradle files do not reintroduce those declarations.
+- Unused Gemini/server packages were removed from `package.json`; npm and Bun lockfiles are regenerated and committed by CI.
+- CI installs dependencies, runs tests and production build, syncs Capacitor, and builds Debug and unsigned Release APKs.
+- Vietnamese and English Fastlane descriptions and changelogs exist.
+- Native launcher mipmap resources exist.
 - License is GPL-3.0-or-later.
 
-## Current CI verification
+## Latest verified build
 
-Latest successful Android build:
-https://github.com/caphenpro/Sohuithongminh/actions/runs/41024741373
+Commit: `e093425beb404b422b84f3a84d5bc1f531ee5d9a`
 
-Latest successful application test and web build:
-https://github.com/caphenpro/Sohuithongminh/actions/runs/41024741327
+Android build:
+https://github.com/caphenpro/Sohuithongminh/actions/runs/41026286152
 
-The latest CI run generated an installable Debug APK for device testing, an unsigned Release APK, and an Android source project archive. The unsigned Release APK is not directly installable and is not a substitute for F-Droid's own source build and signing process.
+Application tests and web build:
+https://github.com/caphenpro/Sohuithongminh/actions/runs/41026286175
+
+Latest APK SHA-256:
+- Unsigned Release: `f95514967d79afd23794667a24a4d7d34b25710a400acd19ef7460ad3e3cbca4`
+- Debug: `925613b084421b8c07d3969836a9d7d0e72bab0c6c9ddcfe19de81ffb415e337`
+
+Artifacts:
+- Debug APK: https://github.com/caphenpro/Sohuithongminh/actions/runs/41026286152/artifacts/12963961759
+- Unsigned Release APK: https://github.com/caphenpro/Sohuithongminh/actions/runs/41026286152/artifacts/12963831843
+- Android source project: https://github.com/caphenpro/Sohuithongminh/actions/runs/41026286152/artifacts/12963682201
+
+The unsigned Release APK is not directly installable and is not a substitute for F-Droid's own source build and signing process.
 
 ## Remaining work before an F-Droid submission
 
-1. **Reproducible offline build:** F-Droid builds must not download arbitrary dependencies during the build. The Gradle wrapper points to a remote Gradle distribution, and Gradle/Maven dependencies still need to be supplied through an F-Droid-accepted mechanism. The successful GitHub Actions build uses network access and does not prove offline reproducibility.
-2. **F-Droid build recipe:** create and validate metadata YAML in the separate `fdroiddata` repository, including version, commit, build commands, Gradle configuration and required prebuild steps.
-3. **Store assets:** add genuine screenshots and verify launcher artwork and asset licenses. Native launcher mipmap resources exist, but Fastlane screenshot/icon metadata has not been verified as complete.
-4. **Runtime validation:** test core workflows on a physical Android device in airplane mode, including create/edit hui, collection/payment records, PIN lock, JSON export and restore.
-5. **Static and build validation:** run `fdroid lint` and `fdroid build` against the exact tagged source revision in a supported fdroidserver environment.
-6. **Submission:** open a merge request to F-Droid's separate `fdroiddata` repository and address reviewer feedback.
+1. **Reproducible offline build:** The Gradle wrapper points to a remote Gradle distribution. Gradle and Maven dependencies must be available through an F-Droid-accepted mechanism. GitHub Actions currently builds with network access, so this does not prove offline reproducibility.
+2. **F-Droid recipe:** `fdroiddata-template.yml` is only a draft. Copy and validate it in the separate `fdroiddata` repository. The Gradle recipe and build output path must be tested with fdroidserver; do not submit it unverified.
+3. **Store assets:** Fastlane text metadata and native mipmap launcher resources exist. F-Droid screenshots have not been added or verified. Add genuine screenshots from the running app and verify all artwork licenses.
+4. **Runtime validation:** Test core workflows on a physical Android device in airplane mode: create/edit hui, collection/payment records, PIN lock, JSON export and restore.
+5. **Static and build validation:** Run `fdroid lint` and `fdroid build` against the exact tagged source revision in a supported fdroidserver environment.
+6. **Submission:** Open a merge request to F-Droid's separate `fdroiddata` repository and address reviewer feedback.
 
 ## Offline and privacy notes
 
