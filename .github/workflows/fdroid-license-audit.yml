@@ -27,6 +27,14 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Upload generated npm lockfile for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdroid-generated-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Generate production dependency license report
         run: |
           npx --yes license-checker --production --json --out dependency-licenses.json
