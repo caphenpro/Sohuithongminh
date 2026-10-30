@@ -77,6 +77,20 @@ jobs:
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
 
+      - name: Package generated Android source project
+        run: |
+          zip -r android-source-project.zip android \\
+            -x 'android/.gradle/*' 'android/**/build/*' 'android/local.properties'
+          test -s android-source-project.zip
+
+      - name: Upload generated Android source project
+        uses: actions/upload-artifact@v4
+        with:
+          name: so-hui-thong-minh-android-source
+          path: android-source-project.zip
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Verify APK outputs and checksums
         run: |
           test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
