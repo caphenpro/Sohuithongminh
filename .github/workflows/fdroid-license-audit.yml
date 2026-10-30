@@ -7,6 +7,7 @@ on:
     paths:
       - 'package.json'
       - 'bun.lock'
+      - 'package-lock.json'
       - '.github/workflows/fdroid-license-audit.yml'
 
 permissions:
@@ -25,7 +26,12 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
 
       - name: Upload generated npm lockfile for review
         uses: actions/upload-artifact@v4
