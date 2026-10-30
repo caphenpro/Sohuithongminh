@@ -23,7 +23,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
   const [name, setName] = useState('');
   const [baseAmount, setBaseAmount] = useState<number>(1000000);
   const [customBaseStr, setCustomBaseStr] = useState('1000000');
-  const [totalShares, setTotalShares] = useState<number>(12);
+  const [totalShares, setTotalShares] = useState<number>(0);
   const [cycle, setCycle] = useState<HuiCycle>('monthly');
   const [startDate, setStartDate] = useState(getTodayDateString());
   const [commissionDefault, setCommissionDefault] = useState<number>(500000);
@@ -133,7 +133,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
 
     const groupName = name.trim() || `Dây ${formatVND(baseAmount)} - ${totalShares} phần`;
 
-    if (baseAmount <= 0) {
+    if (!Number.isInteger(totalShares) || totalShares < 1 || totalShares > 1000) {\n      setErrorMsg('Vui lòng tự nhập tổng số phần/kỳ từ 1 đến 1.000!');\n      return;\n    }\n\n    if (baseAmount <= 0) {
       setErrorMsg('Vui lòng nhập số tiền 1 phần hụi lớn hơn 0!');
       return;
     }
@@ -276,17 +276,21 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Tổng Số Phần:
               </label>
-              <select
-                value={totalShares}
-                onChange={(e) => setTotalShares(parseInt(e.target.value, 10))}
+              <input
+                type="number"
+                inputMode="numeric"
+                min="1"
+                max="1000"
+                step="1"
+                value={totalShares || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTotalShares(value === '' ? 0 : Math.max(0, Math.min(1000, Math.floor(Number(value) || 0))));
+                  setErrorMsg('');
+                }}
+                placeholder="Tự nhập tổng số phần / kỳ"
                 className="w-full py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-teal-500 focus:outline-none"
-              >
-                {[6, 8, 10, 12, 15, 18, 20, 24, 30].map((n) => (
-                  <option key={n} value={n}>
-                    {n} phần ({n} kỳ)
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
