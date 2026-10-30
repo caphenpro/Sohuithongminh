@@ -1,0 +1,93 @@
+name: Build F-Droid-compatible Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'vite.config.ts'
+      - 'capacitor.config.json'
+      - '.github/workflows/build-fdroid-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run tests and build web assets
+        run: |
+          npm test
+          npm run build
+
+      - name: Generate and sync native Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Set release version metadata
+        working-directory: android
+        run: |
+          sed -i 's/versionCode 1/versionCode 20000/' app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "2.0.0"/' app/build.gradle
+          grep -nE 'applicationId|versionCode|versionName|minSdkVersion|targetSdkVersion' app/build.gradle
+
+      - name: Build unsigned release APK for F-Droid source-build verification
+        working-directory: android
+        run: ./gradlew --no-daemon --no-build-cache clean assembleRelease
+
+      - name: Build debug APK for direct device testing
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Verify APK outputs and checksums
+        run: |
+          test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify android/app/build/outputs/apk/debug/app-debug.apk
+          sha256sum android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/debug/app-debug.apk | tee apk-sha256.txt
+
+      - name: Upload F-Droid source-build APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: so-hui-thong-minh-fdroid-unsigned-release
+          path: |
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: so-hui-thong-minh-debug-installable
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
