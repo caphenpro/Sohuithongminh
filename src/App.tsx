@@ -64,7 +64,10 @@ export default function App() {
   };
   const selectedGroup = useMemo(() => groups.find((g) => g.id === selectedGroupId) || null, [groups, selectedGroupId]);
   const selectedRound = useMemo(() => selectedGroup?.rounds.find((r) => r.id === selectedRoundId) || null, [selectedGroup, selectedRoundId]);
-  const existingMembersPool = useMemo(() => Array.from(new Set(groups.flatMap((g) => g.members.map((m) => m.name.trim()).filter(Boolean))), [groups]);
+  const existingMembersPool = useMemo(
+    () => Array.from(new Set(groups.flatMap((g) => g.members.map((m) => m.name.trim()).filter(Boolean)))),
+    [groups]
+  );
 
   const handleSaveNewGroup = (newGroup: HuiGroup) => {
     handleUpdateGroups([newGroup, ...groups]);
