@@ -10,6 +10,7 @@ on:
       - 'package.json'
       - 'bun.lock'
       - 'vite.config.ts'
+      - 'index.html'
       - 'capacitor.config.json'
       - '.github/workflows/build-fdroid-apk.yml'
 
