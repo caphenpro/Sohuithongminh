@@ -1,0 +1,4 @@
+Phiên bản 2.0.0
+- Tùy chỉnh tổng số phần/kỳ bằng cách nhập trực tiếp.
+- Quản lý dây hụi, chân hụi, kỳ khui và thu chi.
+- Lưu dữ liệu cục bộ và sao lưu/khôi phục JSON.
