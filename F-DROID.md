@@ -1,23 +1,29 @@
 # F-Droid packaging status
 
-Package ID: `vn.caphenpro.sohuithongminh`
-Current upstream version: `2.0.0` (versionCode `20000` in the Android build workflow)
-License: `GPL-3.0-or-later`
+Package ID: `vn.caphenpro.sohuithongminh`  
+Current upstream version: `2.0.0` (versionCode `20000` in the Android CI build)  
+License: `GPL-3.0-or-later`  
 Source: https://github.com/caphenpro/Sohuithongminh
 
 ## Upstream metadata
 
-Fastlane-compatible descriptions and changelogs are maintained under `fastlane/metadata/android/`.
+Fastlane-compatible descriptions and changelogs are maintained under `fastlane/metadata/android/`. The package manifest declares `GPL-3.0-or-later`.
 
-## Before submitting to the official F-Droid repository
+## Current status: preparation only
 
-- Audit every direct and transitive dependency and every bundled asset for license compatibility.
-- Ensure the app does not require a developer-provided API key or a non-free online service for its core features. F-Droid does not supply API keys.
-- Add an upstream release tag matching the version name and verify the source archive can build on F-Droid's build server.
-- Prepare the `fdroiddata` metadata recipe and test it with `fdroid lint` and an actual `fdroid build` in a supported environment.
-- Add a raster app icon and real device screenshots to the metadata if required by the submission/review process.
-- Submit a merge request to the official `fdroiddata` repository and wait for review. This repository has not yet been accepted or published by F-Droid.
+This project has **not** been accepted or published by F-Droid. The GitHub Actions APK workflow is a preliminary CI build and does not prove that F-Droid can reproduce the APK from the public source.
+
+## Required before official submission
+
+- Run the GitHub Actions workflow **F-Droid dependency license audit** and manually review every direct and transitive dependency, including license expressions reported by the tool. A machine-generated report is an aid, not a legal determination.
+- Remove unused dependencies and regenerate/commit a consistent lockfile. The repository currently has `bun.lock`, while the APK workflow uses `npm install`; dependency resolution is therefore not yet pinned consistently for the F-Droid build.
+- Commit a stable Android Gradle project and wrapper, or document a supported source-generation step that can run reproducibly in F-Droid's build environment. At present, the CI workflow generates the Capacitor Android project during the build.
+- Verify the project builds without developer-only API keys or non-free services. F-Droid does not provide API keys.
+- Review remotely loaded assets such as Google Fonts and ensure the app remains fully functional offline.
+- Add a raster launcher icon and genuine screenshots to the metadata.
+- Create and publish a source release/tag, then test the exact source revision using `fdroid lint` and `fdroid build` in a supported fdroidserver environment.
+- Prepare the metadata file for the separate `fdroiddata` repository and submit a merge request for review.
 
 ## Build notes
 
-The GitHub Actions APK workflow is a preliminary CI build, not proof of an F-Droid reproducible build. F-Droid builds and signs packages using its own source-build and review process. The unsigned release APK is not directly installable as-is.
+The unsigned release APK is not directly installable as-is. F-Droid builds and signs apps through its own source-build process; do not upload the unsigned APK as a substitute for a source-build recipe.
