@@ -11,7 +11,7 @@
     "lint": "tsc --noEmit",
     "android:sync": "npm run build && cap sync android",
     "android:debug": "npm run android:sync && cd android && ./gradlew assembleDebug",
-    "test": "tsx --test src/utils/huiCalculator.test.ts"
+    "test": "node --import tsx --test src/utils/huiCalculator.test.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
