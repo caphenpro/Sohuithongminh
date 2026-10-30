@@ -28,12 +28,9 @@ Builds:
       - apt-get update
       - apt-get install -y nodejs npm
     init:
-      - cd ..
-      - npm ci --no-audit --no-fund
-    prebuild:
-      - cd ..
-      - npm run build
-      - npx cap sync android
+      - cd .. && npm ci --no-audit --no-fund
+    build:
+      - cd .. && npm run build && npx cap sync android
     gradle:
       - yes
     output: app/build/outputs/apk/release/app-release-unsigned.apk
