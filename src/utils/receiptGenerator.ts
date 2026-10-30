@@ -233,14 +233,41 @@ export async function generateReceiptImage(
 /**
  * Tải trực tiếp file ảnh PNG về máy
  */
-export async function downloadReceiptImageFile(group: HuiGroup, round: HuiRound): Promise<void> {
-  const dataUrl = await generateReceiptImage(group, round);
-  if (!dataUrl) return;
+function receiptFileName(group: HuiGroup, round: HuiRound): string {
+  const safeGroupName = group.name.trim().replace(/[^\\p{L}\\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'Day_Hui';
+  return `BangThuHui_Ky_${round.roundNumber}_${safeGroupName}.png`;
+}
 
+async function generateReceiptBlob(group: HuiGroup, round: HuiRound): Promise<Blob> {
+  const dataUrl = await generateReceiptImage(group, round);
+  if (!dataUrl) throw new Error('Không thể tạo ảnh bảng kê. Vui lòng thử lại.');
+  const response = await fetch(dataUrl);
+  if (!response.ok) throw new Error('Không thể chuyển ảnh bảng kê sang tệp PNG.');
+  return response.blob();
+}
+
+/** Tải PNG bằng Blob URL, ổn định hơn data URL trên Android WebView. */
+export async function downloadReceiptImageFile(group: HuiGroup, round: HuiRound): Promise<void> {
+  const blob = await generateReceiptBlob(group, round);
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = `BangThuHui_Ky_${round.roundNumber}_${group.name.replace(/\s+/g, '_')}.png`;
+  a.href = url;
+  a.download = receiptFileName(group, round);
+  a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+/** Mở bảng chia sẻ Android để gửi trực tiếp ảnh qua Zalo/Messenger nếu được hỗ trợ. */
+export async function shareReceiptImage(group: HuiGroup, round: HuiRound): Promise<'shared' | 'downloaded'> {
+  const blob = await generateReceiptBlob(group, round);
+  const file = new File([blob], receiptFileName(group, round), { type: 'image/png' });
+  if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+    await navigator.share({ files: [file], title: `Bảng thu hụi kỳ ${round.roundNumber}`, text: `Bảng thu hụi - ${group.name}` });
+    return 'shared';
+  }
+  await downloadReceiptImageFile(group, round);
+  return 'downloaded';
 }
