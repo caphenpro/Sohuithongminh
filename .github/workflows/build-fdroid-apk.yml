@@ -16,7 +16,7 @@ on:
       - '.github/workflows/build-fdroid-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -59,7 +59,7 @@ jobs:
 
       - name: Generate and sync native Android project
         run: |
-          npx cap add android
+          if [ ! -d android ]; then npx cap add android; fi
           npx cap sync android
 
       - name: Set release version metadata
@@ -68,6 +68,18 @@ jobs:
           sed -i 's/versionCode 1/versionCode 20000/' app/build.gradle
           sed -i 's/versionName "1.0"/versionName "2.0.0"/' app/build.gradle
           grep -nE 'applicationId|versionCode|versionName|minSdkVersion|targetSdkVersion' app/build.gradle
+
+      - name: Commit generated Android project to repository
+        run: |
+          # Keep generated native sources and bundled web assets in version control.
+          sed -i '/^capacitor-cordova-android-plugins$/d; /^app\\/src\\/main\\/assets\\/public$/d; /^app\\/src\\/main\\/assets\\/capacitor\\.config\\.json$/d; /^app\\/src\\/main\\/assets\\/capacitor\\.plugins\\.json$/d; /^app\\/src\\/main\\/res\\/xml\\/config\\.xml$/d' android/.gitignore
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(android): commit generated native project [skip ci]'
+            git push
+          fi
 
       - name: Build unsigned release APK for F-Droid source-build verification
         working-directory: android
