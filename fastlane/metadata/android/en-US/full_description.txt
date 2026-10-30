@@ -1,0 +1,12 @@
+So Hui Thong Minh helps users manage hui (rotating savings group) records on their device.
+
+Features:
+• Create and manage multiple hui groups.
+• Set the total number of shares/participants per round.
+• Track shares, rounds, collections and payouts.
+• Record collection and handover activity.
+• Store records locally and support offline use.
+• Export and restore versioned JSON backups with a SHA-256 checksum.
+• Protect app access with a PIN hashed using PBKDF2-SHA-256.
+
+Note: PIN hashing is not the same as encrypting all stored data. Keep backups in a safe place and reconcile each group's rules with the participants' actual agreement.
