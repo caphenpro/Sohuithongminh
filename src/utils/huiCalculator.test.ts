@@ -38,6 +38,7 @@ test('auction round deducts bid only from live shares; dead shares pay base amou
   assert.equal(payments.find(p => p.shareId === 's1')?.amountDue, 1_000_000);
   assert.equal(payments.find(p => p.shareId === 's3')?.amountDue, 800_000);
   assert.equal(payments.find(p => p.shareId === 's2')?.amountDue, 0);
+  assert.equal(payments.find(p => p.shareId === 's2')?.isLive, false);
 });
 
 test('collection statistics exclude winner and calculate pending amount', () => {
