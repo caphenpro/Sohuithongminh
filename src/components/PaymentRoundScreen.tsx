@@ -26,7 +26,7 @@ import {
 import { HuiGroup, HuiRound, PaymentItem } from '../types/hui';
 import { formatVND, formatDateVN } from '../utils/formatters';
 import { getRoundCollectionStats } from '../utils/huiCalculator';
-import { generateZaloShareText, downloadReceiptImageFile } from '../utils/receiptGenerator';
+import { generateZaloShareText, downloadReceiptImageFile, shareReceiptImage } from '../utils/receiptGenerator';
 
 interface PaymentRoundScreenProps {
   group: HuiGroup;
@@ -119,6 +119,25 @@ export const PaymentRoundScreen: React.FC<PaymentRoundScreenProps> = ({
     });
   };
 
+  // Chia sẻ ảnh PNG qua bảng chia sẻ Android (chọn Zalo/Messenger)
+  const handleShareImage = async () => {
+    setIsExportingImage(true);
+    try {
+      const result = await shareReceiptImage(group, round);
+      setNotification(result === 'shared'
+        ? 'Đã mở bảng chia sẻ. Chọn Zalo để gửi ảnh bảng kê.'
+        : 'Thiết bị chưa hỗ trợ chia sẻ tệp; ảnh đã được chuyển sang tải về.');
+      setTimeout(() => setNotification(null), 4000);
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return;
+      console.error('Lỗi chia sẻ ảnh bảng kê:', e);
+      setNotification(e instanceof Error ? `Không chia sẻ được ảnh: ${e.message}` : 'Không chia sẻ được ảnh bảng kê.');
+      setTimeout(() => setNotification(null), 5000);
+    } finally {
+      setIsExportingImage(false);
+    }
+  };
+
   // Xuất ảnh bảng kê PNG
   const handleDownloadImage = async () => {
     setIsExportingImage(true);
@@ -127,7 +146,9 @@ export const PaymentRoundScreen: React.FC<PaymentRoundScreenProps> = ({
       setNotification('Đã tạo và tải file ảnh bảng kê về điện thoại!');
       setTimeout(() => setNotification(null), 3000);
     } catch (e) {
-      console.error(e);
+      console.error('Lỗi xuất ảnh bảng kê:', e);
+      setNotification(e instanceof Error ? `Không xuất được ảnh: ${e.message}` : 'Không xuất được ảnh bảng kê. Vui lòng thử lại.');
+      setTimeout(() => setNotification(null), 5000);
     } finally {
       setIsExportingImage(false);
     }
@@ -471,12 +492,12 @@ export const PaymentRoundScreen: React.FC<PaymentRoundScreenProps> = ({
           </button>
 
           <button
-            onClick={handleDownloadImage}
+            onClick={handleShareImage}
             disabled={isExportingImage}
             className="flex-1 py-3 px-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm transition"
           >
             <ImageIcon className="w-4 h-4 text-emerald-400" />
-            {isExportingImage ? 'Đang tạo ảnh...' : 'Xuất File Ảnh Bảng Kê'}
+            {isExportingImage ? 'Đang tạo ảnh...' : 'Chia sẻ ảnh Zalo'}
           </button>
         </div>
       </div>
@@ -532,6 +553,13 @@ export const PaymentRoundScreen: React.FC<PaymentRoundScreenProps> = ({
                 className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"
               >
                 <ImageIcon className="w-4 h-4" /> Tải File Ảnh
+              </button>
+              <button
+                onClick={handleShareImage}
+                disabled={isExportingImage}
+                className="py-3 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"
+              >
+                <Share2 className="w-4 h-4" /> Gửi ảnh
               </button>
             </div>
           </div>
