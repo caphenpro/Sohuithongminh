@@ -76,8 +76,8 @@ jobs:
       - name: Set release version metadata
         working-directory: android
         run: |
-          sed -i 's/versionCode 1/versionCode 20000/' app/build.gradle
-          sed -i 's/versionName "1.0"/versionName "2.0.0"/' app/build.gradle
+          sed -i 's/versionCode 1/versionCode 20100/' app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "2.0.1"/' app/build.gradle
           grep -nE 'applicationId|versionCode|versionName|minSdkVersion|targetSdkVersion' app/build.gradle
 
       - name: Commit generated Android project and lockfiles
