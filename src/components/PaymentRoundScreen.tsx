@@ -143,7 +143,7 @@ export const PaymentRoundScreen: React.FC<PaymentRoundScreenProps> = ({
     setIsExportingImage(true);
     try {
       await downloadReceiptImageFile(group, round);
-      setNotification('Đã tạo và tải file ảnh bảng kê về điện thoại!');
+      setNotification('Đã lưu ảnh vào thư mục Download/SoHuiThongMinh trên điện thoại.');
       setTimeout(() => setNotification(null), 3000);
     } catch (e) {
       console.error('Lỗi xuất ảnh bảng kê:', e);
