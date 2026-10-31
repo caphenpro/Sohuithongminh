@@ -2,9 +2,13 @@ name: Sign Android Release
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sign-android-release.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   signed-release:
@@ -102,13 +106,43 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose app/build/outputs/apk/release/app-release.apk
           sha256sum app/build/outputs/apk/release/app-release.apk app/build/outputs/bundle/release/app-release.aab | tee signed-release-sha256.txt
 
+      - name: Prepare versioned release APK
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk Sohuithongminh-v2.0.1.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab Sohuithongminh-v2.0.1.aab
+
       - name: Upload signed release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: so-hui-thong-minh-signed-release
+          name: so-hui-thong-minh-v2.0.1-signed-release
           path: |
-            android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/bundle/release/app-release.aab
+            Sohuithongminh-v2.0.1.apk
+            Sohuithongminh-v2.0.1.aab
             android/signed-release-sha256.txt
           if-no-files-found: error
           retention-days: 90
+
+      - name: Publish GitHub Release v2.0.1
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.0.1
+          name: Sổ Hụi Thông Minh v2.0.1
+          target_commitish: main
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+          body: |
+            ## Sổ Hụi Thông Minh v2.0.1
+
+            Bản phát hành chính thức với sửa lỗi xuất ảnh phiếu thu trên Android.
+
+            - Lưu ảnh bảng thu trực tiếp vào thư mục Download/SoHuiThongMinh bằng Android MediaStore.
+            - Chia sẻ ảnh qua bảng chia sẻ Android gốc (Zalo, Messenger và ứng dụng tương thích).
+            - Không yêu cầu quyền truy cập toàn bộ bộ nhớ.
+            - Hoạt động ngoại tuyến theo thiết kế ứng dụng.
+
+            APK đã ký và được xác minh chữ ký bằng apksigner. Kèm SHA-256 để kiểm tra tệp.
+          files: |
+            Sohuithongminh-v2.0.1.apk
+            Sohuithongminh-v2.0.1.aab
+            android/signed-release-sha256.txt
