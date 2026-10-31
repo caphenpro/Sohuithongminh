@@ -5,6 +5,7 @@
 
 import { HuiGroup, HuiRound } from '../types/hui';
 import { formatDateVN, formatVND } from './formatters';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 
 /**
  * Tạo nội dung tin nhắn gửi vào nhóm Zalo / Messenger
@@ -234,7 +235,6 @@ export async function generateReceiptImage(
  * Native Android export bridge. Android handles Downloads through MediaStore and
  * sharing through ACTION_SEND + FileProvider, so no broad storage permission is needed.
  */
-import { Capacitor, registerPlugin } from '@capacitor/core';
 
 interface ReceiptExportPlugin {
   saveToDownloads(options: { base64: string; fileName: string }): Promise<{ uri: string }>;
@@ -244,7 +244,7 @@ interface ReceiptExportPlugin {
 const NativeReceiptExport = registerPlugin<ReceiptExportPlugin>('ReceiptExport');
 
 function receiptFileName(group: HuiGroup, round: HuiRound): string {
-  const safeGroupName = group.name.trim().replace(/[^\\p{L}\\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'Day_Hui';
+  const safeGroupName = group.name.trim().replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'Day_Hui';
   return `BangThuHui_Ky_${round.roundNumber}_${safeGroupName}.png`;
 }
 
