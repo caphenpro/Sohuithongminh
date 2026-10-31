@@ -231,39 +231,70 @@ export async function generateReceiptImage(
 }
 
 /**
- * Tải trực tiếp file ảnh PNG về máy
+ * Native Android export bridge. Android handles Downloads through MediaStore and
+ * sharing through ACTION_SEND + FileProvider, so no broad storage permission is needed.
  */
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+interface ReceiptExportPlugin {
+  saveToDownloads(options: { base64: string; fileName: string }): Promise<{ uri: string }>;
+  shareImage(options: { base64: string; fileName: string; title: string; text: string }): Promise<void>;
+}
+
+const NativeReceiptExport = registerPlugin<ReceiptExportPlugin>('ReceiptExport');
+
 function receiptFileName(group: HuiGroup, round: HuiRound): string {
   const safeGroupName = group.name.trim().replace(/[^\\p{L}\\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '') || 'Day_Hui';
   return `BangThuHui_Ky_${round.roundNumber}_${safeGroupName}.png`;
 }
 
-async function generateReceiptBlob(group: HuiGroup, round: HuiRound): Promise<Blob> {
+async function generateReceiptBase64(group: HuiGroup, round: HuiRound): Promise<string> {
   const dataUrl = await generateReceiptImage(group, round);
-  if (!dataUrl) throw new Error('Không thể tạo ảnh bảng kê. Vui lòng thử lại.');
-  const response = await fetch(dataUrl);
-  if (!response.ok) throw new Error('Không thể chuyển ảnh bảng kê sang tệp PNG.');
-  return response.blob();
+  if (!dataUrl || !dataUrl.startsWith('data:image/png;base64,')) {
+    throw new Error('Không thể tạo ảnh bảng kê PNG. Vui lòng thử lại.');
+  }
+  return dataUrl.substring(dataUrl.indexOf(',') + 1);
 }
 
-/** Tải PNG bằng Blob URL, ổn định hơn data URL trên Android WebView. */
+/** Lưu ảnh trực tiếp vào Download/SoHuiThongMinh trên Android. */
 export async function downloadReceiptImageFile(group: HuiGroup, round: HuiRound): Promise<void> {
-  const blob = await generateReceiptBlob(group, round);
+  const fileName = receiptFileName(group, round);
+  const base64 = await generateReceiptBase64(group, round);
+
+  if (Capacitor.isNativePlatform()) {
+    await NativeReceiptExport.saveToDownloads({ base64, fileName });
+    return;
+  }
+
+  const blob = await (await fetch(`data:image/png;base64,${base64}`)).blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = receiptFileName(group, round);
-  a.rel = 'noopener';
+  a.download = fileName;
+  a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-/** Mở bảng chia sẻ Android để gửi trực tiếp ảnh qua Zalo/Messenger nếu được hỗ trợ. */
+/** Mở bảng chia sẻ Android gốc với tệp PNG đính kèm, tương thích Zalo/Messenger. */
 export async function shareReceiptImage(group: HuiGroup, round: HuiRound): Promise<'shared' | 'downloaded'> {
-  const blob = await generateReceiptBlob(group, round);
-  const file = new File([blob], receiptFileName(group, round), { type: 'image/png' });
+  const fileName = receiptFileName(group, round);
+  const base64 = await generateReceiptBase64(group, round);
+
+  if (Capacitor.isNativePlatform()) {
+    await NativeReceiptExport.shareImage({
+      base64,
+      fileName,
+      title: `Bảng thu hụi kỳ ${round.roundNumber}`,
+      text: `Bảng thu hụi - ${group.name}`,
+    });
+    return 'shared';
+  }
+
+  const blob = await (await fetch(`data:image/png;base64,${base64}`)).blob();
+  const file = new File([blob], fileName, { type: 'image/png' });
   if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
     await navigator.share({ files: [file], title: `Bảng thu hụi kỳ ${round.roundNumber}`, text: `Bảng thu hụi - ${group.name}` });
     return 'shared';
