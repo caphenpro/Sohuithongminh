@@ -19,6 +19,9 @@ export interface HuiMember {
   id: string;
   name: string;
   phone?: string;
+  idNumber?: string; // CCCD/CMND hụi viên
+  birthDate?: string; // Ngày sinh YYYY-MM-DD
+  address?: string; // Nơi cư trú
   sharesCount: number; // Số chân hụi người này tham gia
 }
 
