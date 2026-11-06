@@ -45,13 +45,13 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
    <p>Họ và tên: <b>${esc(settings.ownerName)}</b></p><p>Số CCCD/CMND: ${esc(settings.ownerIdNumber)}</p><p>Ngày, tháng, năm sinh: ........../........../............</p><p>Điện thoại: ${esc(settings.ownerPhone)}</p><p>Nơi cư trú hiện tại: ${esc(settings.ownerAddress)}</p>
    <div class="section-title">II. THỎA THUẬN VỀ DÂY HỤI</div>
    <p>1. Tên dây hụi: <b>${esc(selected.name)}</b>.</p>
-   <p>2. Hình thức mở kỳ: Các bên thực hiện thăm/kêu giá theo quy tắc đã thống nhất; số tiền đóng và số tiền người hốt thực nhận được xác định theo kết quả từng kỳ.</p>
+   <p>2. Loại dây: <b>HỤI KHÔNG LÃI</b>. Các bên không tính lãi suất trên phần hụi. Việc xác định người hốt và khoản tiền thăm (nếu áp dụng) thực hiện theo quy tắc đã thống nhất và được ghi nhận riêng trong kết quả từng kỳ.</p>
    <p>3. Giá trị phần hụi gốc: <b>${money(selected.baseAmount)}</b>/phần.</p>
    <p>4. Số lượng hụi viên: <b>${selected.members.length}</b>; tổng số phần hụi: <b>${selected.totalShares}</b> phần.</p>
    <p>5. Kỳ mở hụi: ${cycleLabel(selected.cycle)}; ngày bắt đầu dự kiến: ${dateVN(selected.startDate)}; số kỳ dự kiến: ${selected.totalShares}; ngày kết thúc: ........../........../............</p>
-   <p>6. Mức tiền thảo dự kiến: ${money(selected.commissionDefault)} tại kỳ có người hốt; mức áp dụng thực tế cần được các bên xác nhận và ghi nhận trong biên bản/kết quả từng kỳ.</p>
+   <p>6. Tiền thảo chủ hụi: Mức tiền thảo dự kiến là <b>${money(selected.commissionDefault)} mỗi kỳ</b>. Đây là khoản tiền <b>người hốt trả cho chủ hụi tại chính kỳ người đó hốt</b>; chủ hụi nhận khoản tiền này. Tiền thảo không phải là lãi của phần hụi. Mức tiền thảo thực tế của từng kỳ được ghi nhận trong kết quả kỳ và các bên xác nhận.</p>
    <p>7. Quy tắc kỳ đầu: ${selected.firstPotRule==='owner_first'?'Chủ hụi hốt trước, không đấu thăm.':'Đấu thăm bình thường từ kỳ đầu.'}</p>
-   <p>8. Thể thức góp và lĩnh hụi: mỗi phần hụi có giá trị bằng phần hụi gốc nêu trên. Theo cách tính hiện tại của ứng dụng, phần chưa lĩnh góp theo mức gốc trừ tiền thăm; phần đã lĩnh góp đủ mức gốc; phần lĩnh trong kỳ không phải góp lại ở chính kỳ đó. Số tiền người lĩnh thực nhận được xác định từ tổng tiền thu sau khi trừ tiền thăm và tiền thảo theo kết quả kỳ.</p>
+   <p>8. Thể thức góp và lĩnh hụi: mỗi phần hụi có giá trị bằng phần hụi gốc nêu trên. Theo cách tính của sổ hụi, phần chưa lĩnh góp theo mức gốc trừ tiền thăm (nếu có); phần đã lĩnh góp đủ mức gốc; phần lĩnh trong kỳ không phải góp lại ở chính kỳ đó. Người hốt nhận số tiền thực tế bằng tổng tiền thu của kỳ sau khi trừ khoản tiền thăm (nếu có) và tiền thảo trả cho chủ hụi theo kết quả kỳ. Dây hụi này không tính lãi suất.</p>
    <div class="section-title">III. CAM KẾT CỦA CÁC BÊN</div>
    <p>1. Hụi viên có trách nhiệm cung cấp thông tin chính xác, đóng góp đầy đủ, đúng hạn và thực hiện nghĩa vụ sau khi hốt hụi theo thỏa thuận.</p>
    <p>2. Chủ hụi có trách nhiệm tổ chức kỳ hụi công khai, ghi nhận đầy đủ việc thu/chi, thông báo kết quả và bàn giao tiền theo thỏa thuận.</p>
@@ -78,9 +78,9 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
   finally{root.remove();setIsGenerating(false);}
  };
  return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4">
-  <div className="flex justify-between items-center"><div className="flex gap-2 items-center"><FileText className="text-teal-700"/><div><h2 className="font-bold text-lg">Văn bản thỏa thuận hụi</h2><p className="text-xs text-slate-500">Xuất PDF từ dữ liệu chủ hụi và dây hụi</p></div></div><button onClick={onClose}><X/></button></div>
+  <div className="flex justify-between items-center"><div className="flex gap-2 items-center"><FileText className="text-teal-700"/><div><h2 className="font-bold text-lg">Văn bản thỏa thuận hụi</h2><p className="text-xs text-slate-500">Chọn từng dây hụi để xuất PDF riêng</p></div></div><button onClick={onClose}><X/></button></div>
   {groups.length===0?<p className="text-sm text-slate-600">Chưa có dây hụi. Hãy tạo dây hụi trước khi lập văn bản.</p>:<>
-   <label className="block text-xs font-semibold">Chọn dây hụi<select value={selected?.id||''} onChange={e=>setGroupId(e.target.value)} className="mt-1 w-full p-3 border rounded-xl text-sm">{groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></label>
+   <label className="block text-xs font-semibold">Chọn dây hụi để lập văn bản<select value={selected?.id||''} onChange={e=>setGroupId(e.target.value)} className="mt-1 w-full p-3 border rounded-xl text-sm">{groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select></label>
    <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1"><p><b>Chủ hụi:</b> {settings.ownerName||'Chưa khai báo'}</p><p><b>CCCD:</b> {settings.ownerIdNumber||'Chưa khai báo'}</p><p><b>Dây hụi:</b> {selected?.name}</p><p><b>Thành viên:</b> {selected?.members.length||0}</p><p><b>Định mức:</b> {selected?money(selected.baseAmount):''} / phần</p></div>
    <p className="text-[11px] text-amber-800 bg-amber-50 p-3 rounded-xl">PDF được tạo trực tiếp trên thiết bị. Tệp chứa CCCD, địa chỉ và số điện thoại; hãy bảo quản riêng tư. Đây là bản dự thảo để các bên rà soát trước khi ký.</p>
    {error&&<p className="text-xs text-red-600">{error}</p>}
