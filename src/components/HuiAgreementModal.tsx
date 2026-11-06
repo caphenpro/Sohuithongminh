@@ -20,7 +20,7 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
   const root=document.createElement('div');
   root.className='hui-pdf-document';
   root.style.cssText='position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111;z-index:-1;';
-  const members=selected.members.map((m,i)=>`<tr><td>${i+1}</td><td class="left">${esc(m.name)}</td><td>${esc(m.phone||'')}</td><td>${money(selected.commissionDefault)}</td><td class="sign-cell"></td></tr>`).join('');
+  const members=selected.members.map((m,i)=>`<tr><td>${i+1}</td><td class="left">${esc(m.name)}</td><td>${esc(m.phone||'')}</td><td>${${m.sharesCount}</td><td class="sign-cell"></td></tr>`).join('');
   root.innerHTML=`
    <style>
     .hui-pdf-document{font-family:"Times New Roman",serif;font-size:15px;line-height:1.5;padding:72px 64px;box-sizing:border-box}
@@ -45,11 +45,11 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
    <p>Họ và tên: <b>${esc(settings.ownerName)}</b></p><p>Số CCCD/CMND: ${esc(settings.ownerIdNumber)}</p><p>Điện thoại: ${esc(settings.ownerPhone)}</p><p>Địa chỉ cư trú hiện tại: ${esc(settings.ownerAddress)}</p>
    <div class="section-title">II. THỎA THUẬN VỀ DÂY HỤI</div>
    <p>1. Tên dây hụi: <b>${esc(selected.name)}</b>.</p>
-   <p>2. Hình thức chơi: Hụi có lãi (đấu giá/kêu giá công khai theo thỏa thuận của các bên).</p>
+   <p>2. Hình thức mở kỳ: Các bên thực hiện thăm/kêu giá theo quy tắc đã thống nhất; số tiền đóng và số tiền người hốt thực nhận được xác định theo kết quả từng kỳ.</p>
    <p>3. Giá trị phần hụi gốc: <b>${money(selected.baseAmount)}</b>/phần.</p>
    <p>4. Tổng số phần: <b>${selected.totalShares}</b> phần; số kỳ dự kiến: ${selected.totalShares} kỳ.</p>
    <p>5. Kỳ mở hụi: ${cycleLabel(selected.cycle)}; ngày bắt đầu dự kiến: ${dateVN(selected.startDate)}.</p>
-   <p>6. Tiền thảo hụi: Người hốt hụi nộp ${money(selected.commissionDefault)} cho chủ hụi tại kỳ hốt, trừ khi các bên có thỏa thuận khác bằng văn bản.</p>
+   <p>6. Mức tiền thảo dự kiến: ${money(selected.commissionDefault)} tại kỳ có người hốt; mức áp dụng thực tế cần được các bên xác nhận và ghi nhận trong biên bản/kết quả từng kỳ.</p>
    <p>7. Quy tắc kỳ đầu: ${selected.firstPotRule==='owner_first'?'Chủ hụi hốt trước, không đấu thăm.':'Đấu thăm bình thường từ kỳ đầu.'}</p>
    <p>8. Việc đóng tiền của hụi viên sống, hụi viên đã hốt, mức lãi và số tiền thực nhận được xác định theo kết quả từng kỳ và quy tắc đã thống nhất; các bên đối chiếu số liệu trước khi ký.</p>
    <div class="section-title">III. CAM KẾT CỦA CÁC BÊN</div>
@@ -58,7 +58,7 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
    <p>3. Mọi thay đổi hoặc phát sinh phải được các bên xác nhận; tranh chấp được ưu tiên giải quyết bằng thương lượng và theo quy định pháp luật hiện hành.</p>
    <div class="section-title">IV. DANH SÁCH HỤI VIÊN THAM GIA KÝ XÁC NHẬN</div>
    <p>Tên dây hụi: ${esc(selected.name)}</p>
-   <table><thead><tr><th>STT</th><th>Họ và tên hụi viên</th><th>Số điện thoại</th><th>Tiền thảo (nếu hốt)</th><th>Ký tên xác nhận</th></tr></thead><tbody>${members}</tbody></table>
+   <table><thead><tr><th>STT</th><th>Họ và tên hụi viên</th><th>Số điện thoại</th><th>Số phần tham gia</th><th>Ký tên xác nhận</th></tr></thead><tbody>${members}</tbody></table>
    <div class="signature"><b>CHỦ HỤI</b><br/><i>(Ký và ghi rõ họ tên)</i><br/><br/><br/><br/><b>${esc(settings.ownerName)}</b></div>
    <p class="note">Văn bản được tạo từ dữ liệu đang lưu trong Sổ Hụi Thông Minh. Các bên cần đọc, rà soát, thống nhất nội dung và điền các điều khoản còn thiếu trước khi ký.</p>
   `;
