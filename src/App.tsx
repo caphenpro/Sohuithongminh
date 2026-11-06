@@ -9,10 +9,12 @@ import { HuiGroupListScreen } from './components/HuiGroupListScreen';
 import { HuiDetailScreen } from './components/HuiDetailScreen';
 import { PaymentRoundScreen } from './components/PaymentRoundScreen';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { OwnerProfileModal } from './components/OwnerProfileModal';
+import { HuiAgreementModal } from './components/HuiAgreementModal';
 
 export default function App() {
   const [groups, setGroups] = useState<HuiGroup[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ pinEnabled: false, pinCode: '', autoLockMinutes: 5, ownerName: 'Chủ Hụi', ownerPhone: '', fontSize: 'normal' });
+  const [settings, setSettings] = useState<AppSettings>({ pinEnabled: false, pinCode: '', autoLockMinutes: 5, ownerName: '', ownerPhone: '', ownerIdNumber: '', ownerAddress: '', fontSize: 'normal' });
   const [isReady, setIsReady] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -20,6 +22,8 @@ export default function App() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showOwnerModal, setShowOwnerModal] = useState(false);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +33,7 @@ export default function App() {
       if (!active) return;
       setGroups(loadedGroups);
       setSettings(loadedSettings);
+      setShowOwnerModal(!loadedSettings.ownerName || !loadedSettings.ownerIdNumber || !loadedSettings.ownerPhone || !loadedSettings.ownerAddress);
       setIsLocked(Boolean(loadedSettings.pinEnabled && loadedSettings.pinCode));
       setIsReady(true);
     })().catch((error) => {
@@ -107,11 +112,15 @@ export default function App() {
             onOpenCreateModal={() => setShowCreateModal(true)}
             onOpenBackupModal={() => setShowBackupModal(true)}
             onOpenPinModal={() => setShowPinModal(true)}
+            onOpenOwnerProfile={() => setShowOwnerModal(true)}
+            onOpenAgreement={() => setShowAgreementModal(true)}
             onLockApp={() => setIsLocked(true)} />
         )}
         <CreateHuiModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSaveGroup={handleSaveNewGroup} existingMembersPool={existingMembersPool} />
         <BackupRestoreModal isOpen={showBackupModal} onClose={() => setShowBackupModal(false)} onDataChanged={() => { void refreshData(); }} />
         <PinSettingsModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} settings={settings} onSaveSettings={handleUpdateSettings} />
+        <OwnerProfileModal isOpen={showOwnerModal} required={!settings.ownerName || !settings.ownerIdNumber || !settings.ownerPhone || !settings.ownerAddress} settings={settings} onClose={() => setShowOwnerModal(false)} onSave={handleUpdateSettings} />
+        <HuiAgreementModal isOpen={showAgreementModal} onClose={() => setShowAgreementModal(false)} groups={groups} settings={settings} />
       </div>
     </div>
   );
