@@ -58,6 +58,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
       // Tăng thêm số chân
       const updated = [...membersList];
       updated[existingIndex].sharesCount += newMemberShares;
+      if (newMemberPhone.trim()) updated[existingIndex].phone = newMemberPhone.trim();
       setMembersList(updated);
     } else {
       setMembersList((prev) => [
@@ -434,19 +435,25 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
 
             {/* Thêm một người */}
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Nhập tên con hụi (ví dụ: Chị Lan, Anh Ba)..."
-                value={newMemberName}
-                onChange={(e) => setNewMemberName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSingleMember();
-                  }
-                }}
-                className="flex-1 py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  placeholder="Họ tên hụi viên"
+                  value={newMemberName}
+                  onChange={(e) => setNewMemberName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSingleMember(); } }}
+                  className="w-full min-w-0 py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="Số điện thoại"
+                  value={newMemberPhone}
+                  onChange={(e) => setNewMemberPhone(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSingleMember(); } }}
+                  className="w-full min-w-0 py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                />
+              </div>
 
               <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2">
                 <span className="text-[11px] text-slate-500">Phần:</span>
@@ -506,7 +513,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
                     <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center text-[10px] font-bold">
                       {idx + 1}
                     </span>
-                    <span className="font-bold text-slate-800">{m.name}</span>
+                    <div><span className="font-bold text-slate-800 block">{m.name}</span>{m.phone && <span className="text-[10px] text-slate-500">{m.phone}</span>}</div>
                   </div>
 
                   <div className="flex items-center gap-3">
