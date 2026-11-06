@@ -27,7 +27,7 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
     .hui-pdf-document *{box-sizing:border-box}
     .hui-pdf-document .center{text-align:center}
     .hui-pdf-document h1{text-align:center;font-size:20px;margin:26px 0 18px}
-    .hui-pdf-document h2;font-size:16px;margin:20px 0 8px}
+    .hui-pdf-document h2{font-size:16px;margin:20px 0 8px}
     .hui-pdf-document p{margin:7px 0}
     .hui-pdf-document .section-title{font-weight:bold;font-size:16px;margin:20px 0 8px}
     .hui-pdf-document table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
