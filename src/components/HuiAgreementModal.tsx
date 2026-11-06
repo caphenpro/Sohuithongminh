@@ -42,25 +42,25 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
    <h1>GIẤY THỎA THUẬN CHƠI HỤI</h1>
    <p>Hôm nay, ngày ..... tháng ..... năm ........, các bên đồng ý ký kết thỏa thuận chơi hụi với các nội dung sau:</p>
    <div class="section-title">I. THÔNG TIN CHỦ HỤI</div>
-   <p>Họ và tên: <b>${esc(settings.ownerName)}</b></p><p>Số CCCD/CMND: ${esc(settings.ownerIdNumber)}</p><p>Điện thoại: ${esc(settings.ownerPhone)}</p><p>Địa chỉ cư trú hiện tại: ${esc(settings.ownerAddress)}</p>
+   <p>Họ và tên: <b>${esc(settings.ownerName)}</b></p><p>Số CCCD/CMND: ${esc(settings.ownerIdNumber)}</p><p>Ngày, tháng, năm sinh: ........../........../............</p><p>Điện thoại: ${esc(settings.ownerPhone)}</p><p>Nơi cư trú hiện tại: ${esc(settings.ownerAddress)}</p>
    <div class="section-title">II. THỎA THUẬN VỀ DÂY HỤI</div>
    <p>1. Tên dây hụi: <b>${esc(selected.name)}</b>.</p>
    <p>2. Hình thức mở kỳ: Các bên thực hiện thăm/kêu giá theo quy tắc đã thống nhất; số tiền đóng và số tiền người hốt thực nhận được xác định theo kết quả từng kỳ.</p>
    <p>3. Giá trị phần hụi gốc: <b>${money(selected.baseAmount)}</b>/phần.</p>
-   <p>4. Tổng số phần: <b>${selected.totalShares}</b> phần; số kỳ dự kiến: ${selected.totalShares} kỳ.</p>
-   <p>5. Kỳ mở hụi: ${cycleLabel(selected.cycle)}; ngày bắt đầu dự kiến: ${dateVN(selected.startDate)}.</p>
+   <p>4. Số lượng hụi viên: <b>${selected.members.length}</b>; tổng số phần hụi: <b>${selected.totalShares}</b> phần.</p>
+   <p>5. Kỳ mở hụi: ${cycleLabel(selected.cycle)}; ngày bắt đầu dự kiến: ${dateVN(selected.startDate)}; số kỳ dự kiến: ${selected.totalShares}; ngày kết thúc: ........../........../............</p>
    <p>6. Mức tiền thảo dự kiến: ${money(selected.commissionDefault)} tại kỳ có người hốt; mức áp dụng thực tế cần được các bên xác nhận và ghi nhận trong biên bản/kết quả từng kỳ.</p>
    <p>7. Quy tắc kỳ đầu: ${selected.firstPotRule==='owner_first'?'Chủ hụi hốt trước, không đấu thăm.':'Đấu thăm bình thường từ kỳ đầu.'}</p>
-   <p>8. Việc đóng tiền của hụi viên sống, hụi viên đã hốt, mức lãi và số tiền thực nhận được xác định theo kết quả từng kỳ và quy tắc đã thống nhất; các bên đối chiếu số liệu trước khi ký.</p>
+   <p>8. Thể thức góp và lĩnh hụi: mỗi phần hụi có giá trị bằng phần hụi gốc nêu trên. Theo cách tính hiện tại của ứng dụng, phần chưa lĩnh góp theo mức gốc trừ tiền thăm; phần đã lĩnh góp đủ mức gốc; phần lĩnh trong kỳ không phải góp lại ở chính kỳ đó. Số tiền người lĩnh thực nhận được xác định từ tổng tiền thu sau khi trừ tiền thăm và tiền thảo theo kết quả kỳ.</p>
    <div class="section-title">III. CAM KẾT CỦA CÁC BÊN</div>
    <p>1. Hụi viên có trách nhiệm cung cấp thông tin chính xác, đóng góp đầy đủ, đúng hạn và thực hiện nghĩa vụ sau khi hốt hụi theo thỏa thuận.</p>
    <p>2. Chủ hụi có trách nhiệm tổ chức kỳ hụi công khai, ghi nhận đầy đủ việc thu/chi, thông báo kết quả và bàn giao tiền theo thỏa thuận.</p>
    <p>3. Mọi thay đổi hoặc phát sinh phải được các bên xác nhận; tranh chấp được ưu tiên giải quyết bằng thương lượng và theo quy định pháp luật hiện hành.</p>
    <div class="section-title">IV. DANH SÁCH HỤI VIÊN THAM GIA KÝ XÁC NHẬN</div>
    <p>Tên dây hụi: ${esc(selected.name)}</p>
-   <table><thead><tr><th>STT</th><th>Họ và tên hụi viên</th><th>Số điện thoại</th><th>Số phần tham gia</th><th>Ký tên xác nhận</th></tr></thead><tbody>${members}</tbody></table>
+   <table><thead><tr><th>STT</th><th>Thông tin hụi viên</th><th>Nơi cư trú</th><th>Số phần</th><th>Ký tên xác nhận</th></tr></thead><tbody>${members}</tbody></table>
    <div class="signature"><b>CHỦ HỤI</b><br/><i>(Ký và ghi rõ họ tên)</i><br/><br/><br/><br/><b>${esc(settings.ownerName)}</b></div>
-   <p class="note">Văn bản được tạo từ dữ liệu đang lưu trong Sổ Hụi Thông Minh. Các bên cần đọc, rà soát, thống nhất nội dung và điền các điều khoản còn thiếu trước khi ký.</p>
+   <p class="note">Văn bản được tạo từ dữ liệu hiện có trong Sổ Hụi Thông Minh. Theo Điều 8 Nghị định 19/2019/NĐ-CP, thỏa thuận về dây hụi có các thông tin chủ yếu về giấy tờ tùy thân, ngày sinh và nơi cư trú của chủ hụi và từng hụi viên. Ứng dụng hiện chưa lưu đầy đủ các trường này cho hụi viên và chưa lưu ngày sinh chủ hụi; các dòng chấm cần được điền đầy đủ, kiểm tra và thống nhất trước khi ký.</p>
   `;
   document.body.appendChild(root);
   try{
