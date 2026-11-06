@@ -9,7 +9,7 @@ const LEGACY_SETTINGS_KEY = 'so_hui_settings_v1';
 
 export const DEFAULT_SETTINGS: AppSettings = {
   pinEnabled: false, pinCode: '', autoLockMinutes: 5,
-  ownerName: 'Chủ Hụi', ownerPhone: '', fontSize: 'normal',
+  ownerName: '', ownerPhone: '', ownerIdNumber: '', ownerAddress: '', fontSize: 'normal',
 };
 
 export type AuditEntry = { id?: number; action: string; at: string; details?: Record<string, unknown> };
@@ -137,7 +137,7 @@ export async function saveHuiGroups(groups: HuiGroup[]): Promise<void> {
 }
 export async function loadAppSettings(): Promise<AppSettings> {
   await initializeStorage();
-  return { ...DEFAULT_SETTINGS, ...(await readRecord<AppSettings>(SETTINGS_KEY)) };
+  return { ...DEFAULT_SETTINGS, ...(await readRecord<Partial<AppSettings>>(SETTINGS_KEY)) };
 }
 export async function saveAppSettings(settings: AppSettings): Promise<AppSettings> {
   const safe = { ...settings };
