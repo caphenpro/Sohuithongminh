@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Download, FileText, X } from 'lucide-react';
 import type { AppSettings, HuiGroup } from '../types/hui';
 
@@ -64,17 +65,23 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
   `;
   document.body.appendChild(root);
   try{
-   const {default:html2pdf}=await import('html2pdf.js');
-   const safeName=selected.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9-]+/g,'_');
-   await html2pdf().set({
-    margin:[10,10,12,10],
-    filename:'Thoa_thuan_hui_'+safeName+'.pdf',
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['css','legacy']}
-   }).from(root).save();
-  }catch(e){console.error('PDF export failed:',e);setError('Không tạo được PDF. Hãy thử lại hoặc mở ứng dụng bằng trình duyệt Chrome mới nhất.');}
+   const safeName=selected.name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9-]+/g,'_');
+   if(Capacitor.isNativePlatform()){
+    const {Printer}=await import('@capgo/capacitor-printer');
+    const printDocument='<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div class="hui-pdf-document">'+root.innerHTML+'</div></body></html>';
+    await Printer.printHtml({name:'Thoa_thuan_hui_'+safeName,html:printDocument});
+   }else{
+    const {default:html2pdf}=await import('html2pdf.js');
+    await html2pdf().set({
+     margin:[10,10,12,10],
+     filename:'Thoa_thuan_hui_'+safeName+'.pdf',
+     image:{type:'jpeg',quality:0.98},
+     html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false},
+     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+     pagebreak:{mode:['css','legacy']}
+    }).from(root).save();
+   }
+  }catch(e){console.error('PDF export failed:',e);setError('Không mở được chức năng xuất PDF. Hãy thử lại; nếu vẫn lỗi, kiểm tra bản ứng dụng đã được cập nhật.');}
   finally{root.remove();setIsGenerating(false);}
  };
  return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4">
@@ -84,7 +91,7 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
    <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1"><p><b>Chủ hụi:</b> {settings.ownerName||'Chưa khai báo'}</p><p><b>CCCD:</b> {settings.ownerIdNumber||'Chưa khai báo'}</p><p><b>Dây hụi:</b> {selected?.name}</p><p><b>Thành viên:</b> {selected?.members.length||0}</p><p><b>Định mức:</b> {selected?money(selected.baseAmount):''} / phần</p></div>
    <p className="text-[11px] text-amber-800 bg-amber-50 p-3 rounded-xl">PDF được tạo trực tiếp trên thiết bị. Tệp chứa CCCD, địa chỉ và số điện thoại; hãy bảo quản riêng tư. Đây là bản dự thảo để các bên rà soát trước khi ký.</p>
    {error&&<p className="text-xs text-red-600">{error}</p>}
-   <button onClick={()=>void download()} disabled={!selected||!settings.ownerName||!settings.ownerIdNumber||!settings.ownerPhone||!settings.ownerAddress||isGenerating} className="w-full p-3 rounded-xl bg-teal-700 text-white font-bold disabled:opacity-40"><Download className="inline w-4 h-4 mr-2"/>{isGenerating?'Đang tạo PDF…':'Tải văn bản PDF'}</button>
+   <button onClick={()=>void download()} disabled={!selected||!settings.ownerName||!settings.ownerIdNumber||!settings.ownerPhone||!settings.ownerAddress||isGenerating} className="w-full p-3 rounded-xl bg-teal-700 text-white font-bold disabled:opacity-40"><Download className="inline w-4 h-4 mr-2"/>{isGenerating?'Đang chuẩn bị văn bản…':Capacitor.isNativePlatform()?'Xuất PDF / Lưu PDF':'Tải văn bản PDF'}</button>
   </>}
  </div></div>;
 };
