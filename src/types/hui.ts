@@ -75,8 +75,10 @@ export interface AppSettings {
   pinEnabled: boolean;
   pinCode: string; // PBKDF2 hash; never store the raw PIN
   autoLockMinutes: number; // Khóa sau số phút không dùng
-  ownerName: string; // Tên chủ hụi
+  ownerName: string; // Họ và tên chủ hụi
   ownerPhone: string;
+  ownerIdNumber: string; // CCCD/CMND chủ hụi
+  ownerAddress: string; // Địa chỉ nơi ở hiện tại
   fontSize: 'normal' | 'large'; // Hỗ trợ chữ cực to cho người lớn tuổi
 }
 
