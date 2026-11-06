@@ -21,7 +21,7 @@ export const HuiAgreementModal:React.FC<Props>=({isOpen,onClose,groups,settings}
   const root=document.createElement('div');
   root.className='hui-pdf-document';
   root.style.cssText='position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111;z-index:-1;';
-  const members=selected.members.map((m,i)=>`<tr><td>${i+1}</td><td class="left"><b>${esc(m.name)}</b><br/>CCCD/CMND: ........................<br/>Ngày sinh: ........../........../............<br/>Điện thoại: ${esc(m.phone||'........................')}</td><td class="left">Nơi cư trú: ..............................................</td><td>${m.sharesCount} phần</td><td class="sign-cell"></td></tr>`).join('');
+  const members=selected.members.map((m,i)=>`<tr><td>${i+1}</td><td class="left"><b>${esc(m.name)}</b><br/>CCCD/CMND: ${esc(m.idNumber||'........................')}<br/>Ngày sinh: ${m.birthDate?dateVN(m.birthDate):'........../........../............'}<br/>Điện thoại: ${esc(m.phone||'........................')}</td><td class="left">Nơi cư trú: ${esc(m.address||'..............................................')}</td><td>${m.sharesCount} phần</td><td class="sign-cell"></td></tr>`).join('');
   root.innerHTML=`
    <style>
     .hui-pdf-document{font-family:"Times New Roman",serif;font-size:15px;line-height:1.5;padding:72px 64px;box-sizing:border-box}
