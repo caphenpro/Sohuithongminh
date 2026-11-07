@@ -18,11 +18,13 @@ import {
   TrendingUp,
   AlertCircle,
   FileSpreadsheet,
+  Pencil,
 } from 'lucide-react';
-import { HuiGroup, HuiRound } from '../types/hui';
+import { HuiGroup, HuiRound, HuiMember } from '../types/hui';
 import { formatVND, formatDateVN, getCycleLabel } from '../utils/formatters';
 import { getRoundCollectionStats } from '../utils/huiCalculator';
 import { BidRoundModal } from './BidRoundModal';
+import { AddHuiMemberModal, NewHuiMemberInfo } from './AddHuiMemberModal';
 
 interface HuiDetailScreenProps {
   group: HuiGroup;
@@ -39,11 +41,48 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'rounds' | 'members'>('rounds');
   const [showBidModal, setShowBidModal] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);\n  const [editingMember, setEditingMember] = useState<HuiMember | undefined>(undefined);
 
   const completedRoundsCount = group.rounds.filter((r) => r.status === 'completed').length;
   const collectingRound = group.rounds.find((r) => r.status === 'collecting');
   const nextRoundNumber = group.rounds.length + 1;
   const hasRemainingRounds = group.rounds.length < group.totalShares;
+
+  const handleAddMember = (info: NewHuiMemberInfo) => {
+    if (info.id) {
+      const oldMember = group.members.find((m) => m.id === info.id);
+      if (!oldMember) return;
+      const countChanged = oldMember.sharesCount !== info.sharesCount;
+      if (group.rounds.length > 0 && countChanged) return;
+      const updatedMember = { ...oldMember, name: info.name, phone: info.phone, idNumber: info.idNumber, birthDate: info.birthDate, address: info.address, sharesCount: info.sharesCount };
+      let updatedShares = group.shares.map((share) => share.memberId === oldMember.id ? { ...share, memberName: info.name, phone: info.phone } : share);
+      if (countChanged) {
+        updatedShares = updatedShares.filter((share) => share.memberId !== oldMember.id);
+        updatedShares.push(...Array.from({ length: info.sharesCount }, (_, i) => ({
+          id: `share_${oldMember.id}_${i + 1}`, memberId: oldMember.id, memberName: info.name, shareIndex: i + 1, phone: info.phone, isDead: false,
+        })));
+      }
+      const updatedRounds = group.rounds.map((round) => ({
+        ...round,
+        winnerMemberName: round.winnerMemberId === oldMember.id ? info.name : round.winnerMemberName,
+        payments: round.payments.map((payment) => payment.memberId === oldMember.id ? { ...payment, memberName: info.name, phone: info.phone } : payment),
+      }));
+      onUpdateGroup({ ...group, members: group.members.map((m) => m.id === oldMember.id ? updatedMember : m), shares: updatedShares, rounds: updatedRounds, totalShares: countChanged ? group.totalShares - oldMember.sharesCount + info.sharesCount : group.totalShares });
+      setEditingMember(undefined);
+      return;
+    }
+    if (group.rounds.length > 0) {
+      window.alert('Dây hụi đã mở kỳ. Không thể thêm phần mới vì sẽ làm thay đổi quy mô và lịch sử tài chính. Hãy tạo dây hụi mới nếu cần.');
+      return;
+    }
+    const memberId = `member_${Date.now()}`;
+    const newMember = { id: memberId, name: info.name, phone: info.phone, idNumber: info.idNumber, birthDate: info.birthDate, address: info.address, sharesCount: info.sharesCount };
+    const newShares = Array.from({ length: info.sharesCount }, (_, i) => ({
+      id: `share_${memberId}_${i + 1}`, memberId, memberName: info.name, shareIndex: i + 1,
+      phone: info.phone, isDead: false,
+    }));
+    onUpdateGroup({ ...group, members: [...group.members, newMember], shares: [...group.shares, ...newShares], totalShares: group.totalShares + info.sharesCount });
+  };
 
   // Xử lý khi chốt kỳ mới từ modal
   const handleConfirmNewRound = (newRound: HuiRound) => {
@@ -203,7 +242,7 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Danh Sách Con Hụi ({group.shares.length} phần)
+            Danh sách hụi viên ({group.members.length} người)
           </button>
         </div>
       </div>
@@ -310,53 +349,35 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
           )}
         </div>
       ) : (
-        /* TAB 2: DANH SÁCH CON HỤI */
-        <div className="px-4 pt-3 space-y-2">
-          {group.shares.map((share, index) => {
-            const isWinner = share.isDead;
-            return (
-              <div
-                key={share.id}
-                className="bg-white rounded-2xl p-3.5 border border-slate-200 flex items-center justify-between gap-3 shadow-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-7 h-7 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
-                    {index + 1}
-                  </span>
-
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900">
-                        {share.memberName}
-                      </span>
-                      {group.shares.filter((s) => s.memberId === share.memberId).length > 1 && (
-                        <span className="text-xs text-slate-500 font-medium">
-                          (Chân {share.shareIndex})
-                        </span>
-                      )}
-                    </div>
-                    {share.phone && (
-                      <span className="text-xs text-slate-400">{share.phone}</span>
-                    )}
-                  </div>
+        /* TAB 2: DANH SÁCH HỤI VIÊN */
+        <div className="px-4 pt-3 space-y-3">
+          <button onClick={() => setShowAddMemberModal(true)} className="w-full p-4 rounded-2xl bg-teal-700 hover:bg-teal-800 text-white font-bold flex items-center justify-center gap-2 shadow-sm">
+            <Plus className="w-5 h-5"/> Thêm hụi viên
+          </button>
+          {group.members.map((member, index) => {
+            const memberShares = group.shares.filter(s => s.memberId === member.id);
+            const wonShares = memberShares.filter(s => s.isDead).length;
+            return <div key={member.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+              <div className="flex items-start gap-3">
+                <span className="w-8 h-8 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center text-sm font-bold shrink-0">{index+1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-base text-slate-900">{member.name}</div>
+                  <div className="text-sm text-slate-600 mt-1">CCCD/CMND: {member.idNumber || 'Chưa nhập'}</div>
+                  <div className="text-sm text-slate-600">Ngày sinh: {member.birthDate ? formatDateVN(member.birthDate) : 'Chưa nhập'}</div>
+                  <div className="text-sm text-slate-600">Điện thoại: {member.phone || 'Chưa nhập'}</div>
+                  <div className="text-sm text-slate-600 whitespace-pre-wrap">Nơi cư trú: {member.address || 'Chưa nhập'}</div>
+                  <div className="text-xs font-semibold text-teal-700 mt-2">{member.sharesCount} phần · Đã hốt {wonShares}/{memberShares.length} phần</div>
                 </div>
-
-                <div className="text-right">
-                  {isWinner ? (
-                    <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200 inline-block">
-                      Đã hốt Kỳ {share.wonRoundNumber} (Hụi chết)
-                    </span>
-                  ) : (
-                    <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-200 inline-block">
-                      Chưa hốt (Hụi sống)
-                    </span>
-                  )}
-                </div>
+                <button type="button" aria-label={`Sửa ${member.name}`} onClick={() => setEditingMember(member)} className="p-2 rounded-xl border border-slate-200 text-teal-700 hover:bg-teal-50 shrink-0"><Pencil className="w-4 h-4"/></button>
               </div>
-            );
+            </div>;
           })}
+          {group.members.length===0 && <div className="p-6 bg-white rounded-2xl text-center text-sm text-slate-500">Chưa có hụi viên trong dây này.</div>}
         </div>
       )}
+
+      <AddHuiMemberModal isOpen={showAddMemberModal} onClose={() => setShowAddMemberModal(false)} onSave={handleAddMember} sharesLocked={group.rounds.length > 0} />
+      <AddHuiMemberModal isOpen={Boolean(editingMember)} onClose={() => setEditingMember(undefined)} onSave={handleAddMember} member={editingMember} sharesLocked={group.rounds.length > 0} />
 
       {/* Modal Kêu Hụi Kỳ Mới */}
       {showBidModal && (

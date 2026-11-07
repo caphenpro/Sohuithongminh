@@ -19,6 +19,8 @@ import {
   Lock,
   Layers,
   Calendar,
+  UserRound,
+  FileText,
 } from 'lucide-react';
 import { AppSettings, HuiGroup, HuiRound } from '../types/hui';
 import { formatVND, formatDateVN, getCycleLabel } from '../utils/formatters';
@@ -32,6 +34,8 @@ interface HuiGroupListScreenProps {
   onOpenCreateModal: () => void;
   onOpenBackupModal: () => void;
   onOpenPinModal: () => void;
+  onOpenOwnerProfile: () => void;
+  onOpenAgreement: () => void;
   onLockApp: () => void;
 }
 
@@ -43,6 +47,8 @@ export const HuiGroupListScreen: React.FC<HuiGroupListScreenProps> = ({
   onOpenCreateModal,
   onOpenBackupModal,
   onOpenPinModal,
+  onOpenOwnerProfile,
+  onOpenAgreement,
   onLockApp,
 }) => {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('active');
@@ -104,6 +110,8 @@ export const HuiGroupListScreen: React.FC<HuiGroupListScreenProps> = ({
 
           {/* Công cụ tiện ích: Khóa PIN & Sao lưu */}
           <div className="flex items-center gap-1">
+            <button onClick={onOpenAgreement} className="p-2 rounded-xl text-teal-100 hover:text-white hover:bg-teal-700/60 transition" title="Tạo văn bản thỏa thuận"><FileText className="w-5 h-5" /></button>
+            <button onClick={onOpenOwnerProfile} className="p-2 rounded-xl text-teal-100 hover:text-white hover:bg-teal-700/60 transition" title="Hồ sơ chủ hụi"><UserRound className="w-5 h-5" /></button>
             <button
               onClick={onOpenBackupModal}
               className="p-2 rounded-xl text-teal-100 hover:text-white hover:bg-teal-700/60 transition"

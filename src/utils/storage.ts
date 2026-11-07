@@ -15,8 +15,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   pinEnabled: false,
   pinCode: '',
   autoLockMinutes: 5,
-  ownerName: 'Chủ Hụi',
+  ownerName: '',
   ownerPhone: '',
+  ownerIdNumber: '',
+  ownerAddress: '',
   fontSize: 'normal',
 };
 

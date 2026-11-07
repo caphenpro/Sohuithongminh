@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'feature/**']
+    branches: [main, 'feature/**', 'feat/**']
     paths:
       - 'src/**'
       - 'package.json'
@@ -36,7 +36,9 @@ jobs:
         run: npm run build
       - name: Generate Android project
         run: |
-          npx cap add android
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
           npx cap sync android
       - name: Build debug APK
         working-directory: android
