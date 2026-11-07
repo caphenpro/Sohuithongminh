@@ -18,8 +18,9 @@ import {
   TrendingUp,
   AlertCircle,
   FileSpreadsheet,
+  Pencil,
 } from 'lucide-react';
-import { HuiGroup, HuiRound } from '../types/hui';
+import { HuiGroup, HuiRound, HuiMember } from '../types/hui';
 import { formatVND, formatDateVN, getCycleLabel } from '../utils/formatters';
 import { getRoundCollectionStats } from '../utils/huiCalculator';
 import { BidRoundModal } from './BidRoundModal';
@@ -40,7 +41,7 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'rounds' | 'members'>('rounds');
   const [showBidModal, setShowBidModal] = useState(false);
-  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);\n  const [editingMember, setEditingMember] = useState<HuiMember | undefined>(undefined);
 
   const completedRoundsCount = group.rounds.filter((r) => r.status === 'completed').length;
   const collectingRound = group.rounds.find((r) => r.status === 'collecting');
@@ -48,6 +49,32 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
   const hasRemainingRounds = group.rounds.length < group.totalShares;
 
   const handleAddMember = (info: NewHuiMemberInfo) => {
+    if (info.id) {
+      const oldMember = group.members.find((m) => m.id === info.id);
+      if (!oldMember) return;
+      const countChanged = oldMember.sharesCount !== info.sharesCount;
+      if (group.rounds.length > 0 && countChanged) return;
+      const updatedMember = { ...oldMember, name: info.name, phone: info.phone, idNumber: info.idNumber, birthDate: info.birthDate, address: info.address, sharesCount: info.sharesCount };
+      let updatedShares = group.shares.map((share) => share.memberId === oldMember.id ? { ...share, memberName: info.name, phone: info.phone } : share);
+      if (countChanged) {
+        updatedShares = updatedShares.filter((share) => share.memberId !== oldMember.id);
+        updatedShares.push(...Array.from({ length: info.sharesCount }, (_, i) => ({
+          id: `share_${oldMember.id}_${i + 1}`, memberId: oldMember.id, memberName: info.name, shareIndex: i + 1, phone: info.phone, isDead: false,
+        })));
+      }
+      const updatedRounds = group.rounds.map((round) => ({
+        ...round,
+        winnerMemberName: round.winnerMemberId === oldMember.id ? info.name : round.winnerMemberName,
+        payments: round.payments.map((payment) => payment.memberId === oldMember.id ? { ...payment, memberName: info.name, phone: info.phone } : payment),
+      }));
+      onUpdateGroup({ ...group, members: group.members.map((m) => m.id === oldMember.id ? updatedMember : m), shares: updatedShares, rounds: updatedRounds, totalShares: countChanged ? group.totalShares - oldMember.sharesCount + info.sharesCount : group.totalShares });
+      setEditingMember(undefined);
+      return;
+    }
+    if (group.rounds.length > 0) {
+      window.alert('Dây hụi đã mở kỳ. Không thể thêm phần mới vì sẽ làm thay đổi quy mô và lịch sử tài chính. Hãy tạo dây hụi mới nếu cần.');
+      return;
+    }
     const memberId = `member_${Date.now()}`;
     const newMember = { id: memberId, name: info.name, phone: info.phone, idNumber: info.idNumber, birthDate: info.birthDate, address: info.address, sharesCount: info.sharesCount };
     const newShares = Array.from({ length: info.sharesCount }, (_, i) => ({
@@ -341,6 +368,7 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
                   <div className="text-sm text-slate-600 whitespace-pre-wrap">Nơi cư trú: {member.address || 'Chưa nhập'}</div>
                   <div className="text-xs font-semibold text-teal-700 mt-2">{member.sharesCount} phần · Đã hốt {wonShares}/{memberShares.length} phần</div>
                 </div>
+                <button type="button" aria-label={`Sửa ${member.name}`} onClick={() => setEditingMember(member)} className="p-2 rounded-xl border border-slate-200 text-teal-700 hover:bg-teal-50 shrink-0"><Pencil className="w-4 h-4"/></button>
               </div>
             </div>;
           })}
@@ -348,7 +376,8 @@ export const HuiDetailScreen: React.FC<HuiDetailScreenProps> = ({
         </div>
       )}
 
-      <AddHuiMemberModal isOpen={showAddMemberModal} onClose={() => setShowAddMemberModal(false)} onSave={handleAddMember} />
+      <AddHuiMemberModal isOpen={showAddMemberModal} onClose={() => setShowAddMemberModal(false)} onSave={handleAddMember} sharesLocked={group.rounds.length > 0} />
+      <AddHuiMemberModal isOpen={Boolean(editingMember)} onClose={() => setEditingMember(undefined)} onSave={handleAddMember} member={editingMember} sharesLocked={group.rounds.length > 0} />
 
       {/* Modal Kêu Hụi Kỳ Mới */}
       {showBidModal && (
